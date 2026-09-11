@@ -937,6 +937,28 @@
       }
       return data.user;
     }
+    async function searchPublicUsers(term) {
+      if (!supabaseClient) return { data: [], error: new Error('Supabase não configurado.') };
+      const clean = String(term || '').trim();
+      if (!clean) return { data: [], error: null };
+
+      // Caminho principal: RPC segura.
+      const rpc = await supabaseClient.rpc('search_user_directory', { search_term: clean });
+      if (!rpc.error) return { data: rpc.data || [], error: null };
+
+      // Compatibilidade com bancos em que a RPC ainda não foi atualizada no
+      // schema cache. O SQL do projeto também libera somente os campos
+      // públicos necessários para esta busca.
+      const fallback = await supabaseClient
+        .from('profiles')
+        .select('id, username, name')
+        .or(`username.ilike.%${clean.replace(/[,%()]/g, '')}%,name.ilike.%${clean.replace(/[,%()]/g, '')}%`)
+        .limit(20);
+      if (!fallback.error) return { data: fallback.data || [], error: null, fallback: true };
+
+      return { data: [], error: rpc.error, fallbackError: fallback.error };
+    }
+
     async function sendFriendRequest(friend, friendId = null) {
       const authUser = await getAuthenticatedUser();
       if (!supabaseClient || !authUser) { showToast('Entre na sua conta para adicionar amigos'); return; }
@@ -945,8 +967,10 @@
         const term = friendName(friend).trim();
         const normalized = term.includes('@gmail.com') ? term.split('@')[0] : term;
         const safeTerm = normalized.replace(/[,%()]/g, '');
-        const { data, error } = await supabaseClient.rpc('search_user_directory', { search_term: safeTerm });
-        if (error) { showToast('Não foi possível buscar essa conta'); return; }
+        const result = await searchPublicUsers(safeTerm);
+        const data = result.data;
+        const error = result.error;
+        if (error) { console.error('Erro na busca de conta:', error, result.fallbackError || ''); showToast('Não foi possível buscar essa conta'); return; }
         const exact = (data || []).find(item => item.username?.toLowerCase() === normalized.toLowerCase() || item.name?.toLowerCase() === normalized.toLowerCase());
         if (!exact) { showToast('Nenhuma conta encontrada com esse nome ou username'); return; }
         targetId = exact.id;
@@ -985,11 +1009,13 @@
           suggestions.innerHTML = '<small style="padding:7px;color:var(--muted)">Entre na sua conta para buscar pessoas.</small>';
           suggestions.classList.add('visible'); return;
         }
-        const { data, error } = await supabaseClient.rpc('search_user_directory', { search_term: searchTerm });
+        const result = await searchPublicUsers(searchTerm);
+        const data = result.data;
+        const error = result.error;
         if (requestId !== friendSearchRequest) return;
         if (error) {
-          console.error('Erro na busca de usuários:', error);
-          suggestions.innerHTML = '<small style="padding:7px;color:var(--muted)">Erro ao buscar contas. Verifique o SQL do Supabase.</small>';
+          console.error('Erro na busca de usuários:', error, result.fallbackError || '');
+          suggestions.innerHTML = '<small style="padding:7px;color:var(--muted)">Não foi possível buscar contas agora. Execute o SQL completo do projeto no Supabase.</small>';
           suggestions.classList.add('visible'); return;
         }
         const otherUsers = (data || []).filter(friend => friend.id !== authUser.id).slice(0, 8);

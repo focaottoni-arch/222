@@ -37,6 +37,11 @@ alter table public.profiles enable row level security;
 
 drop policy if exists "Users can view own profile" on public.profiles;
 create policy "Users can view own profile" on public.profiles for select to authenticated using (auth.uid() = id);
+-- Compatibilidade com a busca de amigos caso o PostgREST ainda não tenha
+-- atualizado o schema cache da RPC. A interface seleciona apenas id, username
+-- e name; nenhum e-mail é armazenado nesta tabela.
+drop policy if exists "Authenticated users can view public profiles" on public.profiles;
+create policy "Authenticated users can view public profiles" on public.profiles for select to authenticated using (true);
 drop policy if exists "Users can create own profile" on public.profiles;
 create policy "Users can create own profile" on public.profiles for insert to authenticated with check (auth.uid() = id);
 drop policy if exists "Users can update own profile" on public.profiles;
@@ -140,6 +145,7 @@ as $$
 $$;
 revoke all on function public.search_user_directory(text) from public;
 grant execute on function public.search_user_directory(text) to authenticated;
+grant usage on schema public to authenticated;
 
 -- =========================
 -- AMIZADES E SOLICITAÇÕES
