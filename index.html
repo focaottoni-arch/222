@@ -1,0 +1,1380 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Âncora | Estudos psicológicos</title>
+  <meta name="description" content="Espaço privado para organizar reflexões e conversar sobre estudos psicológicos.">
+  <style>
+    :root {
+      --ink: #243230;
+      --muted: #75827d;
+      --paper: #f5f5ef;
+      --panel: #fffefa;
+      --line: #dde3dc;
+      --sage: #aec4b3;
+      --sage-dark: #5d7868;
+      --coral: #e99478;
+      --coral-light: #fff0e9;
+      --shadow: 0 22px 55px rgba(55, 69, 59, .09);
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--paper); font-family: 'Trebuchet MS', sans-serif; }
+    button, textarea, input { font: inherit; }
+    button { cursor: pointer; }
+    .app { min-height: 100vh; display: grid; grid-template-columns: 320px minmax(0, 1fr); }
+    .sidebar { padding: 24px 16px; border-right: 1px solid var(--line); background: #eef2eb; display: flex; flex-direction: column; }
+    .brand { display: flex; align-items: center; gap: 11px; margin: 4px 8px 22px; }
+    .brand-mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: var(--ink); color: #fff; font-size: 19px; }
+    .brand strong { font-size: 18px; letter-spacing: -.5px; }
+    .brand small { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
+    .account-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 12px; margin-bottom: 18px; border: 1px solid #d5e0d4; border-radius: 12px; background: rgba(255,255,255,.62); }
+    .account-copy { min-width: 0; }
+    .account-copy strong, .account-copy small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .account-copy strong { font-size: 12px; }
+    .account-copy small { margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .account-button { width: 27px; height: 27px; border: 0; border-radius: 8px; background: var(--ink); color: #fff; font-size: 13px; }
+    .settings-button { width: 28px; height: 28px; border: 1px solid #124447; border-radius: 8px; background: transparent; color: var(--sage-dark); font-size: 15px; }
+    .section-label { margin: 0 12px 9px; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; }
+    .new-chat { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px; margin-bottom: 14px; border: 0; border-radius: 9px; background: var(--coral); color: #fff; font-size: 12px; font-weight: 700; }
+    .group-chat { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; margin: -7px 0 14px; border: 1px solid var(--line); border-radius: 9px; background: transparent; color: var(--ink); font-size: 11px; font-weight: 700; }
+    .chat-search { width: 100%; padding: 10px 12px; margin-bottom: 15px; border: 1px solid var(--line); border-radius: 9px; outline: none; background: rgba(255,255,255,.7); color: var(--ink); font-size: 12px; }
+    .friends-panel { display: grid; gap: 9px; }
+    .friends-add { display: flex; gap: 5px; }
+    .friends-add input { min-width: 0; flex: 1; padding: 9px 8px; border: 1px solid var(--line); border-radius: 8px; outline: none; background: rgba(255,255,255,.7); color: var(--ink); font-size: 10px; }
+    .friends-add button { width: 30px; border: 0; border-radius: 8px; background: var(--coral); color: #fff; font-size: 17px; }
+    .friend-suggestions { display: none; gap: 3px; padding: 4px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+    .friend-suggestions.visible { display: grid; }
+    .friend-suggestion { display: flex; align-items: center; gap: 7px; padding: 7px; border: 0; border-radius: 6px; background: transparent; color: var(--ink); font-size: 10px; text-align: left; }
+    .friend-suggestion:hover { background: rgba(57,199,167,.12); }
+    .friend-suggestion strong { display: block; }
+    .friend-suggestion small { display: block; margin-top: 2px; color: var(--muted); }
+    .friend-list { display: grid; gap: 4px; max-height: 270px; overflow-y: auto; }
+    .friend-row { display: grid; grid-template-columns: 25px 1fr 18px; align-items: center; gap: 7px; padding: 7px 5px; border-radius: 8px; color: var(--ink); font-size: 10px; }
+    .friend-row:hover { background: rgba(255,255,255,.08); }
+    .friend-avatar { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; background: #145255; color: #71ddc0; font-size: 11px; }
+    .friend-row small { display: block; margin-top: 2px; color: var(--muted); font-size: 8px; }
+    .friend-row input { accent-color: var(--coral); }
+    .create-friends-group { width: 100%; padding: 9px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: var(--ink); font-size: 10px; font-weight: 700; }
+    .chat-list { display: grid; gap: 3px; }
+    .chat-item { width: 100%; display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 11px 9px; border: 0; border-radius: 10px; background: transparent; text-align: left; }
+    .chat-item.active, .chat-item:hover { background: rgba(255,255,255,.8); }
+    .chat-item-avatar { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--coral-light); color: var(--coral); font-size: 16px; }
+    .chat-item-copy { min-width: 0; }
+    .chat-item-copy strong, .chat-item-copy span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-item-copy strong { font-size: 12px; }
+    .chat-item-copy span, .chat-item time { margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .chat-item time { align-self: start; }
+    .nav-button { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px; margin-bottom: 4px; border: 0; border-radius: 10px; color: var(--muted); background: transparent; text-align: left; }
+    .nav-button.active, .nav-button:hover { color: var(--ink); background: rgba(255, 255, 255, .72); }
+    .nav-icon { width: 18px; text-align: center; font-size: 15px; }
+    .privacy-note { margin-top: auto; padding: 16px; border: 1px solid #d5e0d4; border-radius: 12px; background: rgba(255,255,255,.55); font-size: 11px; line-height: 1.6; color: var(--muted); }
+    .privacy-note strong { display: block; color: var(--sage-dark); font-size: 12px; margin-bottom: 5px; }
+    .main { min-width: 0; padding: 0 clamp(22px, 5vw, 72px) 45px; }
+    .home-view { min-height: calc(100vh - 45px); display: grid; place-items: center; padding: 45px 0; }
+    .home-content { width: min(650px, 100%); text-align: center; }
+    .home-symbol { width: 72px; height: 72px; display: grid; place-items: center; margin: 0 auto 22px; border-radius: 22px; background: var(--ink); color: #fff; font-size: 32px; box-shadow: 0 16px 30px rgba(36,50,48,.16); }
+    .home-content h1 { margin-bottom: 16px; font-size: clamp(34px, 5vw, 58px); }
+    .home-content p { max-width: 510px; margin: 0 auto 27px; color: var(--muted); font-size: 14px; line-height: 1.7; }
+    .start-chat { display: inline-flex; align-items: center; gap: 10px; padding: 14px 20px; border: 0; border-radius: 10px; background: var(--coral); color: #fff; font-size: 13px; font-weight: 700; box-shadow: 0 9px 20px rgba(233,148,120,.24); }
+    .start-chat:hover { background: #d97e62; transform: translateY(-1px); }
+    .home-note { margin-top: 22px !important; color: var(--sage-dark) !important; font-size: 11px !important; }
+    .chat-view[hidden], .home-view[hidden] { display: none; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 21px 0; border-bottom: 1px solid var(--line); margin-bottom: 26px; }
+    .eyebrow { margin: 0 0 6px; color: var(--coral); font-size: 10px; font-weight: 700; letter-spacing: 1.7px; text-transform: uppercase; }
+    h1, h2, p { margin-top: 0; }
+    h1 { margin-bottom: 0; font-family: Georgia, serif; font-size: clamp(25px, 3vw, 36px); font-weight: 500; line-height: 1.08; letter-spacing: -1.1px; }
+    .date { color: var(--muted); font-size: 12px; }
+    .avatar { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; background: #d5e1d3; color: var(--sage-dark); font-weight: 700; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 235px; gap: 20px; align-items: start; }
+    .chat-panel, .side-card { background: var(--panel); border: 1px solid rgba(219, 225, 216, .8); border-radius: 16px; box-shadow: var(--shadow); }
+    .chat-panel { min-height: 630px; display: flex; flex-direction: column; overflow: hidden; }
+    .chat-head { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 17px 21px; border-bottom: 1px solid var(--line); }
+    .chat-title { display: flex; align-items: center; gap: 12px; }
+    .chat-symbol { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 11px; background: var(--coral-light); color: var(--coral); font-size: 20px; }
+    .chat-head h2 { margin: 0; font-size: 15px; }
+    .online { margin: 3px 0 0; color: var(--muted); font-size: 11px; }
+    .status { display: flex; align-items: center; gap: 6px; color: var(--sage-dark); font-size: 11px; }
+    .status i { width: 6px; height: 6px; border-radius: 50%; background: #76a57b; }
+    .ai-badge { padding: 5px 8px; border-radius: 99px; background: #eef2eb; color: var(--sage-dark); font-size: 10px; }
+    .participants { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .messages { flex: 1; padding: 28px 25px 8px; overflow-y: auto; }
+    .message { display: flex; gap: 11px; max-width: 79%; margin-bottom: 23px; animation: rise .35s ease both; }
+    .message.mine { margin-left: auto; flex-direction: row-reverse; }
+    .message-avatar { flex: 0 0 31px; height: 31px; display: grid; place-items: center; border-radius: 50%; background: #d5e1d3; color: var(--sage-dark); font-size: 11px; font-weight: 700; }
+    .message.bot .message-avatar { background: var(--coral-light); color: var(--coral); font-size: 16px; }
+    .bubble { padding: 13px 16px; border-radius: 4px 14px 14px 14px; background: #f0f3ed; color: #45524d; font-size: 13px; line-height: 1.65; }
+    .mine .bubble { border-radius: 14px 4px 14px 14px; background: var(--ink); color: #fff; }
+    .message-meta { margin-top: 6px; color: #a1aaa3; font-size: 10px; }
+    .mine .message-meta { text-align: right; }
+    .message-actions { display: flex; gap: 6px; margin-top: 6px; }
+    .message-actions button { padding: 0; border: 0; background: none; color: var(--sage-dark); font-size: 10px; }
+    .edit-input { min-width: 230px; min-height: 66px; padding: 0; resize: vertical; border: 0; outline: 0; background: transparent; color: inherit; font-size: 13px; line-height: 1.65; }
+    .composer { margin: 15px 20px 20px; padding: 8px 8px 8px 16px; border: 1px solid var(--line); border-radius: 13px; background: #fbfcf8; }
+    .composer textarea { width: 100%; min-height: 42px; resize: none; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 13px; line-height: 1.5; }
+    .composer-bottom { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .composer-hint { color: var(--muted); font-size: 10px; }
+    .send-button { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 0; border-radius: 9px; background: var(--coral); color: #fff; font-size: 12px; font-weight: 700; }
+    .send-button:hover { background: #d97e62; }
+    .side-stack { display: grid; gap: 16px; }
+    .side-card { padding: 21px; box-shadow: none; }
+    .side-card h3 { margin: 0 0 17px; font-size: 13px; }
+    .progress-copy { display: flex; justify-content: space-between; margin-bottom: 10px; color: var(--muted); font-size: 11px; }
+    .progress-copy strong { color: var(--ink); }
+    .progress-bar { height: 7px; overflow: hidden; border-radius: 99px; background: #e7ece5; }
+    .progress-bar span { display: block; width: 68%; height: 100%; border-radius: inherit; background: var(--sage-dark); }
+    .prompt { padding: 13px; border-radius: 10px; background: #f4eee6; font-family: Georgia, serif; font-size: 14px; line-height: 1.4; }
+    .prompt button { margin-top: 12px; padding: 0; border: 0; background: none; color: var(--coral); font-size: 11px; font-weight: 700; }
+    .profile-field { display: grid; gap: 6px; margin-bottom: 13px; }
+    .profile-field label { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .8px; }
+    .profile-field input { width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; outline: none; background: #fbfcf8; color: var(--ink); font-size: 12px; }
+    .profile-field input:focus { border-color: var(--sage-dark); }
+    .save-profile { width: 100%; padding: 9px; border: 0; border-radius: 8px; background: var(--ink); color: #fff; font-size: 11px; font-weight: 700; }
+    .modal-backdrop { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; padding: 20px; background: rgba(36,50,48,.32); }
+    .modal-backdrop[hidden] { display: none; }
+    .account-modal { width: min(410px, 100%); padding: 25px; border-radius: 16px; background: var(--panel); box-shadow: var(--shadow); }
+    .account-modal h2 { margin: 0 0 7px; font-family: Georgia, serif; font-size: 25px; font-weight: 500; }
+    .account-modal p { margin-bottom: 20px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .account-modal .profile-field { margin-bottom: 12px; }
+    .modal-actions { display: flex; gap: 8px; margin-top: 17px; }
+    .modal-actions { justify-content: flex-end; }
+    .modal-actions button { flex: 0 0 auto; min-width: 84px; padding: 8px 12px; border: 0; border-radius: 7px; font-size: 10px; font-weight: 700; }
+    .modal-actions .cancel { background: #b94d55; color: #fff; }
+    .modal-actions .cancel:hover { background: #d45b63; }
+    .modal-actions .confirm { background: #168c68; color: #fff; }
+    .modal-actions .confirm:hover { background: #1daa7d; }
+    .account-mode { width: 100%; padding: 10px 0 0; border: 0; background: transparent; color: var(--coral); font-size: 11px; font-weight: 700; }
+    .settings-modal { width: min(430px, 100%); padding: 25px; border: 1px solid #155254; border-radius: 16px; background: var(--panel); box-shadow: 0 25px 70px rgba(0,0,0,.28); }
+    .settings-modal-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+    .settings-modal h2 { margin: 0; color: var(--ink); font-family: Georgia, serif; font-size: 25px; font-weight: 500; }
+    .modal-close { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: transparent; color: var(--muted); font-size: 20px; line-height: 1; }
+    .modal-close:hover { color: var(--ink); border-color: var(--sage-dark); }
+    .settings-section { padding: 14px 0; border-top: 1px solid var(--line); }
+    .settings-section h3 { margin: 0 0 10px; color: var(--ink); font-size: 12px; }
+    .theme-options { display: flex; gap: 8px; }
+    .theme-option { flex: 1; padding: 10px 6px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: var(--ink); font-size: 10px; }
+    .theme-option[data-theme="teal"] { background: #075448; color: #fff; }
+    .theme-option[data-theme="ocean"] { background: #164a75; color: #fff; }
+    .theme-option[data-theme="plum"] { background: #673c68; color: #fff; }
+    .color-picker-row { display: flex; align-items: center; gap: 12px; }
+    .color-picker { width: 42px; height: 42px; padding: 0; overflow: hidden; border: 3px solid #e9f5f1; border-radius: 50%; background: transparent; cursor: pointer; }
+    .color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+    .color-picker::-webkit-color-swatch { border: 0; border-radius: 50%; }
+    .color-picker-help { color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .photo-row { display: flex; align-items: center; gap: 12px; }
+    .settings-avatar { width: 48px; height: 48px; display: grid; place-items: center; overflow: hidden; border-radius: 50%; background: #145255; color: #71ddc0; font-weight: 700; }
+    .settings-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .photo-label { padding: 9px 11px; border-radius: 8px; background: #075448; color: #fff; font-size: 10px; cursor: pointer; }
+    .photo-label input { display: none; }
+    .logout-button { width: 100%; padding: 10px; border: 1px solid #b86b66; border-radius: 8px; background: transparent; color: #dc8d85; font-size: 11px; font-weight: 700; }
+    body[data-theme="ocean"] { --coral: #4d9ee8; --coral-light: #123e62; --sage: #65b8ed; --sage-dark: #86c8f3; --theme-bg: #071a2a; --theme-panel: #0b263b; --theme-sidebar: #081d30; --theme-border: #19486a; --theme-input: #0d304b; --theme-message: #23435b; --theme-mine: #1769a0; }
+    body[data-theme="plum"] { --coral: #ce83c5; --coral-light: #512c50; --sage: #ce83c5; --sage-dark: #e2a6db; --theme-bg: #211326; --theme-panel: #321b36; --theme-sidebar: #28162d; --theme-border: #633c68; --theme-input: #432449; --theme-message: #503754; --theme-mine: #864477; }
+    body[data-theme="teal"] { --theme-bg: #03191a; --theme-panel: #062526; --theme-sidebar: #041d1e; --theme-border: #124447; --theme-input: #0b3436; --theme-message: #263f46; --theme-mine: #087b6b; }
+    body[data-theme="ocean"], body[data-theme="plum"] { background: var(--theme-bg); }
+    body[data-theme="ocean"] .app, body[data-theme="plum"] .app { background: var(--theme-bg); }
+    body[data-theme="ocean"] .sidebar, body[data-theme="plum"] .sidebar { background: var(--theme-sidebar); border-color: var(--theme-border); }
+    body[data-theme="ocean"] .main, body[data-theme="plum"] .main { background: var(--theme-bg); }
+    body[data-theme="ocean"] .chat-panel, body[data-theme="plum"] .chat-panel, body[data-theme="ocean"] .side-card, body[data-theme="plum"] .side-card { background: var(--theme-panel); border-color: var(--theme-border); }
+    body[data-theme="ocean"] .chat-head, body[data-theme="plum"] .chat-head, body[data-theme="ocean"] .topbar, body[data-theme="plum"] .topbar { background: var(--theme-sidebar); border-color: var(--theme-border); }
+    body[data-theme="ocean"] .messages, body[data-theme="plum"] .messages { background-color: var(--theme-panel); }
+    body[data-theme="ocean"] .bubble, body[data-theme="plum"] .bubble { background: var(--theme-message); }
+    body[data-theme="ocean"] .mine .bubble, body[data-theme="plum"] .mine .bubble { background: var(--theme-mine); }
+    body[data-theme="ocean"] .composer, body[data-theme="plum"] .composer, body[data-theme="ocean"] .profile-field input, body[data-theme="plum"] .profile-field input { background: var(--theme-input); border-color: var(--theme-border); }
+    body[data-theme="ocean"] .support-card, body[data-theme="plum"] .support-card, body[data-theme="ocean"] .help-card, body[data-theme="plum"] .help-card { background: var(--theme-panel); border-color: var(--theme-border); }
+    body[data-theme="ocean"] .topic-card, body[data-theme="plum"] .topic-card, body[data-theme="ocean"] .quote-card, body[data-theme="plum"] .quote-card { background: var(--theme-sidebar); border-color: var(--theme-border); }
+    body.custom-color { --coral: var(--custom-accent); --coral-light: var(--custom-soft); --sage: var(--custom-accent); --sage-dark: var(--custom-light); --ink: #eefcf8; --muted: #a6c4be; }
+    body.custom-color, body.custom-color .main { background: var(--custom-bg); }
+    body.custom-color .app { background: var(--custom-bg); }
+    body.custom-color .sidebar, body.custom-color .topbar, body.custom-color .chat-head { background: var(--custom-sidebar); border-color: var(--custom-border); }
+    body.custom-color .chat-panel, body.custom-color .side-card, body.custom-color .topic-card, body.custom-color .quote-card { background: var(--custom-panel); border-color: var(--custom-border); }
+    body.custom-color .messages { background-color: var(--custom-panel); }
+    body.custom-color .bubble { background: var(--custom-message); }
+    body.custom-color .mine .bubble { background: var(--custom-accent-dark); }
+    body.custom-color .composer, body.custom-color .profile-field input { background: var(--custom-input); border-color: var(--custom-border); }
+    body.custom-color .new-chat, body.custom-color .create-friends-group, body.custom-color .auth-submit, body.custom-color .photo-label { background: var(--custom-accent-dark); }
+    body.custom-color .support-card, body.custom-color .help-card { background: var(--custom-panel); border-color: var(--custom-border); }
+    body.custom-color .brand-mark, body.custom-color .brand small, body.custom-color .section-label, body.custom-color .support-icon { color: var(--custom-light); }
+    body.custom-color .chat-item.active, body.custom-color .chat-item:hover { background: var(--custom-soft); }
+    body.custom-color .side-stack, body.custom-color .home-view, body.custom-color .auth-view { background: var(--custom-bg); }
+    body.custom-color .auth-card, body.custom-color .account-modal, body.custom-color .settings-modal { background: var(--custom-panel); border-color: var(--custom-border); }
+    body.custom-color .chat-search, body.custom-color .friends-add input, body.custom-color .group-description { background: var(--custom-input); border-color: var(--custom-border); }
+    body.custom-color .group-chat, body.custom-color .create-friends-group, body.custom-color .invite-button, body.custom-color .group-info-button, body.custom-color .theme-option { border-color: var(--custom-border); color: var(--custom-light); }
+    body.custom-color #groupList { background: var(--custom-soft); border-color: var(--custom-border); }
+    body.custom-color .group-row { color: var(--custom-panel-text); }
+    body.custom-color .group-row:hover { background: var(--custom-accent-dark); color: var(--custom-accent-text); }
+    body.custom-color .group-row.active { background: var(--custom-accent-dark); color: var(--custom-accent-text); }
+    body:not(.custom-color)[data-theme="light"] { --ink: #182b2b; --muted: #6c7d7a; --paper: #f7faf8; --panel: #ffffff; --line: #e2ebe7; --sage: #b8d8cb; --sage-dark: #287d6c; --coral: #e27d62; --coral-light: #fff0eb; --shadow: 0 18px 50px rgba(31, 70, 61, .08); background: #f7faf8; color: #182b2b; }
+    body:not(.custom-color)[data-theme="light"] .app { background: #f7faf8; }
+    body:not(.custom-color)[data-theme="light"] .sidebar { background: #ffffff; border-color: #e2ebe7; box-shadow: 8px 0 28px rgba(31, 70, 61, .04); }
+    body:not(.custom-color)[data-theme="light"] .brand-mark { background: #e9f5f0; color: #287d6c; }
+    body:not(.custom-color)[data-theme="light"] .brand strong, body:not(.custom-color)[data-theme="light"] .account-copy strong, body:not(.custom-color)[data-theme="light"] .section-label { color: #182b2b; }
+    body:not(.custom-color)[data-theme="light"] .account-row, body:not(.custom-color)[data-theme="light"] .chat-search, body:not(.custom-color)[data-theme="light"] .friends-add input { background: #f8fbf9; border-color: #e2ebe7; }
+    body:not(.custom-color)[data-theme="light"] .new-chat, body:not(.custom-color)[data-theme="light"] .auth-submit { background: #287d6c; }
+    body:not(.custom-color)[data-theme="light"] .group-chat, body:not(.custom-color)[data-theme="light"] .create-friends-group { color: #287d6c; border-color: #cce4da; background: #f8fcfa; }
+    body:not(.custom-color)[data-theme="light"] .chat-item.active, body:not(.custom-color)[data-theme="light"] .chat-item:hover { background: #eef8f3; }
+    body:not(.custom-color)[data-theme="light"] .main, body:not(.custom-color)[data-theme="light"] .home-view, body:not(.custom-color)[data-theme="light"] .auth-view { background: #f7faf8; }
+    body:not(.custom-color)[data-theme="light"] .topbar { background: rgba(247, 250, 248, .92); border-color: #e2ebe7; }
+    body:not(.custom-color)[data-theme="light"] .chat-panel { background: #ffffff; border: 1px solid #e2ebe7; border-radius: 18px; box-shadow: var(--shadow); }
+    body:not(.custom-color)[data-theme="light"] .chat-head { background: #ffffff; border-color: #e2ebe7; }
+    body:not(.custom-color)[data-theme="light"] .messages { background: #fbfdfc; background-image: radial-gradient(circle at 15px 15px, rgba(40,125,108,.05) 1px, transparent 2px), radial-gradient(circle at 42px 37px, rgba(226,125,98,.04) 1px, transparent 2px); }
+    body:not(.custom-color)[data-theme="light"] .chat-symbol { background: #e9f5f0; color: #287d6c; }
+    body:not(.custom-color)[data-theme="light"] .bubble { background: #edf5f1; color: #294541; }
+    body:not(.custom-color)[data-theme="light"] .mine .bubble { background: #287d6c; color: #ffffff; }
+    body:not(.custom-color)[data-theme="light"] .composer { background: #ffffff; border-color: #cfe3da; box-shadow: 0 8px 25px rgba(31,70,61,.06); }
+    body:not(.custom-color)[data-theme="light"] .side-stack { background: #f7faf8; }
+    body:not(.custom-color)[data-theme="light"] .support-card, body:not(.custom-color)[data-theme="light"] .help-card, body:not(.custom-color)[data-theme="light"] .side-card { background: #ffffff; border-color: #e2ebe7; box-shadow: 0 12px 32px rgba(31,70,61,.05); }
+    body:not(.custom-color)[data-theme="light"] .support-card { background: #e9f5f0; }
+    body:not(.custom-color)[data-theme="light"] .quote-card { background: #fff5ef; }
+    body:not(.custom-color)[data-theme="light"] .auth-view { background: radial-gradient(circle at 50% 8%, #e9f5f0 0, #f7faf8 44%, #ffffff 100%); }
+    body:not(.custom-color)[data-theme="light"] .auth-card { background: rgba(255,255,255,.92); border-color: #e2ebe7; box-shadow: 0 24px 70px rgba(31,70,61,.1); }
+    body:not(.custom-color)[data-theme="light"] .auth-card h1, body:not(.custom-color)[data-theme="light"] .auth-logo { color: #182b2b; }
+    body:not(.custom-color)[data-theme="light"] .auth-card .profile-field input, body:not(.custom-color)[data-theme="light"] .profile-field input { background: #fbfdfc; border-color: #d5e5de; color: #182b2b; }
+    body:not(.custom-color)[data-theme="light"] .google-submit { background: #ffffff; border-color: #d5e5de; color: #294541; }
+    body { font-size: 14px; line-height: 1.5; }
+    button, input, textarea { letter-spacing: .01em; }
+    .message .bubble, .composer textarea, .account-modal p, .settings-modal, .credits-modal p { line-height: 1.6; }
+    body.custom-color { --ink: var(--custom-text); --muted: var(--custom-muted); }
+    body.custom-color .bubble { color: var(--custom-panel-text); }
+    body.custom-color .mine .bubble { color: var(--custom-accent-text); }
+    body.custom-color .composer textarea, body.custom-color .profile-field input, body.custom-color .group-description { color: var(--custom-input-text); }
+    body.custom-color .new-chat, body.custom-color .create-friends-group, body.custom-color .auth-submit, body.custom-color .photo-label, body.custom-color .quick-create, body.custom-color .credits-close { color: var(--custom-accent-text); }
+    body.custom-color .group-chat, body.custom-color .invite-button, body.custom-color .group-info-button, body.custom-color .theme-option, body.custom-color .action-list button { color: var(--custom-panel-text); }
+    body.custom-color .chat-head h2, body.custom-color .account-modal h2, body.custom-color .settings-modal h2, body.custom-color .credits-modal h2 { color: var(--custom-panel-text); }
+    body.custom-color .message-meta, body.custom-color .composer-hint, body.custom-color .color-picker-help { color: var(--custom-muted); }
+    body:not(.custom-color)[data-theme="light"] .modal-backdrop { background: rgba(24,43,43,.22); }
+    .group-modal-note { margin: -8px 0 17px !important; font-size: 10px !important; }
+    .invite-button { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: var(--sage-dark); font-size: 10px; font-weight: 700; }
+    .invite-list { display: grid; gap: 7px; max-height: 250px; overflow-y: auto; }
+    .invite-person { display: flex; align-items: center; gap: 9px; padding: 9px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); font-size: 11px; }
+    .invite-person input { margin-left: auto; accent-color: var(--coral); }
+    .group-info-button { padding: 6px 8px; border: 1px solid var(--line); border-radius: 7px; background: transparent; color: var(--sage-dark); font-size: 15px; }
+    .group-photo-preview { width: 58px; height: 58px; display: grid; place-items: center; overflow: hidden; border-radius: 50%; background: var(--coral-light); color: var(--sage-dark); font-size: 24px; }
+    .group-photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .group-photo-label { display: inline-block; padding: 9px 11px; border-radius: 8px; background: var(--coral); color: #fff; font-size: 10px; cursor: pointer; }
+    .group-photo-label input { display: none; }
+    .group-description { width: 100%; min-height: 76px; padding: 10px; resize: vertical; border: 1px solid var(--line); border-radius: 8px; outline: none; background: var(--theme-input, #0b3436); color: var(--ink); font-size: 12px; }
+    .toast { position: fixed; right: 24px; bottom: 24px; padding: 12px 16px; border-radius: 9px; background: var(--ink); color: #fff; font-size: 12px; opacity: 0; transform: translateY(12px); pointer-events: none; transition: .25s ease; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    @keyframes rise { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 900px) { .app { grid-template-columns: 1fr; } .sidebar { padding: 16px 20px; border-right: 0; border-bottom: 1px solid var(--line); } .brand { margin: 0 0 15px; } .chat-list { display: flex; overflow-x: auto; } .chat-item { min-width: 210px; } .privacy-note { display: none; } .layout { grid-template-columns: 1fr; } .side-stack { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 560px) { .main { padding: 0 14px 28px; } .topbar { margin-bottom: 16px; } .layout { display: block; } .side-stack { display: grid; grid-template-columns: 1fr; margin-top: 16px; } .chat-panel { min-height: 620px; } .chat-head, .messages { padding-left: 15px; padding-right: 15px; } .message { max-width: 91%; } .date { display: none; } .status { display: none; } }
+
+    /* Visual language from the reference: deep teal, three-pane conversation layout. */
+    :root { --ink: #e9f5f1; --muted: #8aa9a4; --paper: #031b1c; --panel: #062628; --line: #124447; --sage: #39c7a7; --sage-dark: #54d6b8; --coral: #26b997; --coral-light: #0a3d3d; --shadow: none; }
+    body { min-height: 100vh; background: #03191a; color: var(--ink); font-family: 'Trebuchet MS', sans-serif; }
+    .app { min-height: 100vh; grid-template-columns: 204px minmax(0, 1fr); background: #03191a; }
+    .sidebar { min-height: 100vh; padding: 21px 12px 13px; border-right: 1px solid #103b3d; background: #041d1e; }
+    .brand { margin: 0 14px 21px; gap: 10px; }
+    .brand-mark { width: 46px; height: 46px; border-radius: 0; background: transparent; color: #52d9bb; font-size: 36px; }
+    .brand strong { color: #f0faf7; font-size: 16px; }
+    .brand small { color: #52d9bb; font-size: 10px; }
+    .account-row { padding: 8px; margin: 0 5px 10px; border-color: #124447; background: transparent; }
+    .account-copy strong { color: #e9f5f1; }
+    .account-button { background: #0d4f4b; color: #72e4c6; }
+    .new-chat { margin: 0 0 13px; padding: 10px; background: #075448; color: #e9fff8; border: 1px solid #126c5d; }
+    .group-chat { margin: 0 0 13px; padding: 9px; border-color: #124447; color: #b5d5cf; }
+    .chat-search { padding: 9px 10px; margin-bottom: 12px; border-color: #124447; background: #062729; color: #e9f5f1; }
+    .friends-panel { gap: 8px; }
+    .friends-add input { border-color: #124447; background: #062729; color: #e9f5f1; }
+    .friends-add button { background: #087b6b; }
+    .friend-suggestions { border-color: #124447; background: #062729; }
+    .friend-suggestion { color: #e9f5f1; }
+    .create-friends-group { border-color: #126c5d; background: #075448; color: #e9fff8; }
+    .section-label { margin: 0 9px 8px; color: #dcece8; font-size: 11px; letter-spacing: 0; text-transform: none; }
+    .chat-list { gap: 2px; }
+    .chat-item { grid-template-columns: 34px minmax(0, 1fr) auto; padding: 8px 6px; color: #d6e9e5; }
+    .chat-item.active, .chat-item:hover { background: #0a3b3b; }
+    .chat-item-avatar { background: #145255; color: #71ddc0; }
+    .chat-item-copy strong { color: #e4f3ef; font-size: 10px; }
+    .chat-item-copy span, .chat-item time { color: #789b96; font-size: 9px; }
+    .privacy-note { padding: 10px; border-color: #124447; background: transparent; color: #688b86; font-size: 9px; }
+    .privacy-note strong { color: #63d9bc; font-size: 10px; }
+    .main { padding: 0; background: #041f20; }
+    .topbar { height: 90px; margin: 0; padding: 18px 20px; border-bottom: 1px solid #103b3d; }
+    .topbar h1, .topbar .eyebrow { display: none; }
+    .topbar .avatar { margin-left: auto; background: #0d4f4b; color: #74e3c6; }
+    .layout { grid-template-columns: minmax(360px, 1fr) 200px; gap: 10px; height: calc(100vh - 90px); }
+    .chat-panel, .side-card { border: 0; border-radius: 0; background: #062526; }
+    .chat-panel { min-height: 0; box-shadow: none; }
+    .chat-head { min-height: 65px; padding: 10px 15px; border-color: #103b3d; background: #041e1f; }
+    .chat-symbol { width: 45px; height: 45px; border-radius: 50%; background: #55cdb4; color: #063031; }
+    .chat-head h2 { color: #edf9f5; font-size: 14px; }
+    .online { color: #4bd4b2; font-size: 10px; }
+    .online i { display: inline-block; width: 7px; height: 7px; margin-right: 4px; border-radius: 50%; background: #40d29f; }
+    .participants { color: #769b95; }
+    .status { color: #52d8b8; font-size: 18px; }
+    .ai-badge { background: #0a3d3d; color: #68dcc0; }
+    .messages { padding: 29px 25px 10px; background-color: #062526; background-image: radial-gradient(circle at 15px 15px, rgba(57,199,167,.06) 1px, transparent 2px), radial-gradient(circle at 42px 37px, rgba(57,199,167,.05) 1px, transparent 2px); background-size: 54px 54px; }
+    .message { max-width: 70%; margin-bottom: 18px; }
+    .message-avatar { background: #145255; color: #6fdec1; }
+    .message.bot .message-avatar { background: #145255; color: #71dcc0; }
+    .bubble { padding: 12px 14px; border-radius: 4px 10px 10px 10px; background: #263f46; color: #e6f1ee; font-size: 12px; line-height: 1.45; }
+    .mine .bubble { border-radius: 10px 4px 10px 10px; background: #087b6b; color: #f0fffb; }
+    .message-meta { color: #789a95; }
+    .message-actions button { color: #5cd4b7; }
+    .composer { margin: 8px 12px 12px; padding: 8px 10px 8px 15px; border: 1px solid #1b5555; border-radius: 24px; background: #0b3436; }
+    .composer textarea { min-height: 28px; color: #e9f5f1; }
+    .composer-hint { color: #719892; }
+    .send-button { width: 34px; height: 34px; justify-content: center; padding: 0; border-radius: 50%; background: #16b592; font-size: 0; }
+    .send-button span { font-size: 18px; }
+    .side-stack { gap: 14px; padding: 14px 10px 14px 0; background: #041e1f; overflow-y: auto; }
+    .support-card, .help-card { border: 1px solid #125051; border-radius: 8px; background: #06413e; color: #e5f8f2; text-align: center; }
+    .support-card { padding: 17px 12px 14px; }
+    .support-icon { color: #56ddbd; font-size: 40px; }
+    .support-card h3 { margin: 7px 0 10px; font-size: 12px; }
+    .support-card p { margin: 0; color: #d0e7e1; font-size: 10px; line-height: 1.5; }
+    .topic-card { padding: 13px; border: 1px solid #125051; border-radius: 8px; background: #062729; }
+    .topic-card h3 { margin-bottom: 9px; color: #ecf8f5; font-size: 11px; }
+    .topic-card button { width: 100%; display: flex; justify-content: space-between; padding: 8px 0; border: 0; border-top: 1px solid #124447; background: transparent; color: #d9ebe6; font-size: 10px; text-align: left; }
+    .topic-card button span { color: #7ba09a; font-size: 16px; line-height: 10px; }
+    .quote-card { padding: 13px; border: 1px solid #125051; border-radius: 8px; background: #062729; color: #54d9b8; font-size: 24px; text-align: center; }
+    .quote-card p { margin: 4px 0 10px; color: #e4f2ef; font-size: 11px; line-height: 1.45; }
+    .quote-card strong { color: #56d9b9; font-size: 13px; }
+    .help-card { display: grid; gap: 4px; padding: 11px 8px; font-size: 10px; }
+    .help-card strong { color: #e7faf4; }
+    .help-card span { color: #b6d9d1; }
+    .profile-hidden { display: none; }
+    .home-view { min-height: 100vh; background: #041f20; }
+    .home-content h1 { color: #eaf8f4; }
+    .home-content p { color: #98bbb5; }
+    .home-note { color: #59d7b8 !important; }
+    .auth-view { min-height: 100vh; display: grid; place-items: center; padding: 30px; background: radial-gradient(circle at 50% 20%, #0a3b3b 0, #041f20 42%, #03191a 100%); }
+    .auth-card { width: min(410px, 100%); padding: 34px; border: 1px solid #155254; border-radius: 16px; background: rgba(4, 30, 31, .94); box-shadow: 0 25px 70px rgba(0,0,0,.28); }
+    .auth-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; color: #e9f8f4; font-size: 21px; font-weight: 700; }
+    .auth-logo span { display: grid; place-items: center; width: 43px; height: 43px; border-radius: 13px; background: #075448; color: #61dfc0; font-size: 27px; }
+    .auth-card h1 { margin: 0 0 9px; color: #ecfaf6; font-family: Georgia, serif; font-size: 30px; font-weight: 500; }
+    .auth-card > p { margin-bottom: 24px; color: #8fb4ad; font-size: 12px; line-height: 1.6; }
+    .auth-card .profile-field { margin-bottom: 14px; }
+    .auth-card .profile-field label { color: #83aaa3; }
+    .auth-card .profile-field input { padding: 12px; border-color: #1a5657; background: #072a2b; color: #ebfaf6; }
+    .auth-submit { width: 100%; padding: 12px; border: 0; border-radius: 9px; background: #0a9f83; color: #effffb; font-size: 12px; font-weight: 700; }
+    .oauth-divider { display: flex; align-items: center; gap: 10px; margin: 16px 0 12px; color: #6c918b; font-size: 10px; }
+    .oauth-divider::before, .oauth-divider::after { content: ''; flex: 1; height: 1px; background: #1a5657; }
+    .google-submit { width: 100%; display: flex; align-items: center; justify-content: center; gap: 9px; padding: 11px; border: 1px solid #2b6a6b; border-radius: 9px; background: #0b3031; color: #effffb; font-size: 12px; font-weight: 700; }
+    .google-submit:hover { background: #124849; }
+    .google-mark { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #fff; color: #4285f4; font-size: 13px; font-weight: 700; }
+    .auth-switch { width: 100%; padding: 14px 0 0; border: 0; background: transparent; color: #5cdbbb; font-size: 11px; }
+    .preview-switch { width: 100%; padding: 12px 0 0; border: 0; background: transparent; color: #82aaa3; font-size: 11px; }
+    .auth-disclaimer { margin: 20px 0 0 !important; color: #6c918b !important; font-size: 10px !important; text-align: center; }
+    body.account-first .sidebar { display: none; }
+    body.account-first .main { grid-column: 1 / -1; }
+    .app-view[hidden], .auth-view[hidden] { display: none; }
+    @media (max-width: 900px) { .app { grid-template-columns: 1fr; } .sidebar { min-height: auto; } .layout { height: auto; grid-template-columns: 1fr; } .side-stack { padding: 14px; } }
+    @media (min-width: 601px) and (max-width: 900px) {
+      .app { grid-template-columns: 230px minmax(0, 1fr); }
+      .sidebar { min-height: 100vh; padding: 16px 10px; }
+      .brand { margin-bottom: 16px; }
+      .side-stack { display: none; }
+      .layout { height: calc(100vh - 90px); }
+      .messages { padding-left: 18px; padding-right: 18px; }
+      .message { max-width: 82%; }
+    }
+    @media (max-width: 600px) {
+      .app { display: block; }
+      .sidebar { min-height: 0; padding: 12px 10px; border-right: 0; border-bottom: 1px solid #103b3d; }
+      .brand { margin: 0 5px 12px; }
+      .brand-mark { width: 34px; height: 34px; font-size: 27px; }
+      .brand strong { font-size: 14px; }
+      .account-row { display: flex; justify-content: flex-end; padding: 0; margin: 0 2px 8px; border: 0; }
+      .account-row .account-copy, .account-row .account-button { display: none; }
+      .new-chat, .group-chat { display: inline-flex; width: calc(50% - 4px); justify-content: center; margin: 0 2px 9px; font-size: 10px; }
+      .section-label { margin: 3px 5px 7px; }
+      .friends-panel { display: block; }
+      .friends-add { margin-bottom: 7px; }
+      .friend-list { display: flex; max-height: none; overflow-x: auto; gap: 5px; }
+      .friend-row { min-width: 128px; grid-template-columns: 25px minmax(0, 1fr) 18px; background: #062729; }
+      .create-friends-group { margin-top: 7px; }
+      .privacy-note { display: none; }
+      .main { min-height: calc(100vh - 180px); }
+      .topbar { height: 62px; padding: 12px 14px; }
+      .layout { height: calc(100vh - 62px); }
+      .chat-head { min-height: 62px; padding: 8px 11px; }
+      .chat-head h2 { font-size: 12px; }
+      .chat-symbol { width: 39px; height: 39px; }
+      .status { font-size: 14px; }
+      .messages { padding: 18px 10px 8px; }
+      .message { max-width: 88%; gap: 7px; margin-bottom: 14px; }
+      .message-avatar { flex-basis: 25px; height: 25px; font-size: 9px; }
+      .bubble { padding: 10px 11px; font-size: 11px; }
+      .composer { margin: 6px 7px 8px; padding-left: 11px; }
+      .composer-hint { display: none; }
+      .side-stack { display: none; }
+      .home-view { min-height: calc(100vh - 180px); padding: 24px 15px; }
+      .home-content h1 { font-size: 34px; }
+      .home-content p { font-size: 12px; }
+    }
+    body:not(.custom-color)[data-theme="light"] { --ink: #182b2b; --muted: #6c7d7a; --paper: #f7faf8; --panel: #ffffff; --line: #e2ebe7; --sage-dark: #287d6c; --coral: #e27d62; --coral-light: #fff0eb; background: #f7faf8; color: #182b2b; }
+    body:not(.custom-color)[data-theme="light"], body:not(.custom-color)[data-theme="light"] .app, body:not(.custom-color)[data-theme="light"] .main { background: #f7faf8; }
+    body:not(.custom-color)[data-theme="light"] .sidebar { background: #ffffff; border-color: #e2ebe7; box-shadow: 8px 0 28px rgba(31,70,61,.04); }
+    body:not(.custom-color)[data-theme="light"] .topbar, body:not(.custom-color)[data-theme="light"] .chat-head { background: #ffffff; border-color: #e2ebe7; }
+    body:not(.custom-color)[data-theme="light"] .chat-panel, body:not(.custom-color)[data-theme="light"] .side-card, body:not(.custom-color)[data-theme="light"] .support-card, body:not(.custom-color)[data-theme="light"] .help-card { background: #ffffff; border-color: #e2ebe7; box-shadow: 0 12px 32px rgba(31,70,61,.06); }
+    body:not(.custom-color)[data-theme="light"] .messages { background: #fbfdfc; background-image: radial-gradient(circle at 15px 15px, rgba(40,125,108,.05) 1px, transparent 2px), radial-gradient(circle at 42px 37px, rgba(226,125,98,.04) 1px, transparent 2px); }
+    body:not(.custom-color)[data-theme="light"] .bubble { background: #edf5f1; color: #294541; }
+    body:not(.custom-color)[data-theme="light"] .mine .bubble { background: #287d6c; color: #ffffff; }
+    body:not(.custom-color)[data-theme="light"] .composer, body:not(.custom-color)[data-theme="light"] .profile-field input { background: #ffffff; border-color: #cfe3da; color: #182b2b; }
+    body:not(.custom-color)[data-theme="light"] .home-view, body:not(.custom-color)[data-theme="light"] .auth-view { background: radial-gradient(circle at 50% 8%, #e9f5f0 0, #f7faf8 44%, #ffffff 100%); }
+    body:not(.custom-color)[data-theme="light"] .auth-card { background: rgba(255,255,255,.94); border-color: #e2ebe7; box-shadow: 0 24px 70px rgba(31,70,61,.1); }
+    body:not(.custom-color)[data-theme="light"] .auth-card h1, body:not(.custom-color)[data-theme="light"] .auth-logo, body:not(.custom-color)[data-theme="light"] .chat-head h2 { color: #182b2b; }
+    body:not(.custom-color)[data-theme="light"] .auth-card > p, body:not(.custom-color)[data-theme="light"] .auth-card .profile-field label { color: #6c7d7a; }
+    body:not(.custom-color)[data-theme="light"] .auth-submit, body:not(.custom-color)[data-theme="light"] .new-chat { background: #287d6c; }
+    body:not(.custom-color)[data-theme="light"] .google-submit { background: #ffffff; border-color: #d5e5de; color: #294541; }
+    .sidebar-tools { display: grid; grid-template-columns: 1fr 42px; gap: 8px; margin: 0 5px 16px; }
+    .quick-create, .credits-button { border: 0; border-radius: 11px; font-weight: 700; }
+    .quick-create { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px; background: #287d6c; color: #fff; font-size: 12px; }
+    .quick-create span { font-size: 20px; font-weight: 400; line-height: 1; }
+    .credits-button { display: grid; place-items: center; border: 1px solid #cce4da; background: #fff5ef; color: #d36f61; font-size: 19px; }
+    .quick-create:hover { background: #216a5c; }
+    .credits-button:hover { background: #ffe9df; transform: translateY(-1px); }
+    .action-list { display: grid; gap: 9px; margin-top: 18px; }
+    .action-list button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px; border: 1px solid #dce9e3; border-radius: 11px; background: #f8fcfa; color: #24483f; text-align: left; font-size: 12px; font-weight: 700; }
+    .action-list button:hover { border-color: #287d6c; background: #eef8f3; }
+    .credits-modal { width: min(430px, 100%); padding: 30px; border: 1px solid #e2ebe7; border-radius: 20px; background: #fff; box-shadow: 0 24px 70px rgba(31,70,61,.14); text-align: center; }
+    .credits-heart { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 20px; background: #fff0eb; color: #d36f61; font-size: 31px; }
+    .credits-modal h2 { margin: 0 0 10px; color: #182b2b; font-family: Georgia, serif; font-size: 25px; font-weight: 500; }
+    .credits-modal p { margin: 0; color: #6c7d7a; font-size: 13px; line-height: 1.7; }
+    .credits-close { margin-top: 22px; padding: 10px 16px; border: 0; border-radius: 9px; background: #287d6c; color: #fff; font-size: 11px; font-weight: 700; }
+    .friends-panel .friends-add input { width: 100%; }
+    .group-list-title { margin: 8px 3px 2px; color: var(--muted); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; }
+    #groupList { margin-top: 8px; padding: 8px; border: 1px solid #d6dfdc; border-radius: 12px; background: #e7ecea; }
+    .group-row { display: flex; align-items: center; gap: 7px; width: 100%; padding: 7px 4px; border: 0; border-radius: 8px; background: transparent; color: var(--ink); text-align: left; font-size: 10px; }
+    .group-row:hover { background: #dbe5e1; }
+    .group-row span:first-child { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 8px; background: var(--coral-light); color: var(--coral); background-size: cover; background-position: center; }
+    .group-row strong, .group-row small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .group-row small { margin-top: 2px; color: var(--muted); font-size: 8px; }
+    .group-row.active { background: #d2e4dd; }
+    .reply-preview { display: none; align-items: center; gap: 8px; margin: 0 0 7px; padding: 7px 9px; border-left: 3px solid #287d6c; border-radius: 8px; background: #edf5f1; color: #36564e; font-size: 10px; }
+    .reply-preview.visible { display: flex; }
+    .reply-preview span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .reply-preview button { margin-left: auto; padding: 0 3px; border: 0; background: transparent; color: #71827d; font-size: 16px; }
+    .reply-action { display: inline-block; margin-left: 7px; padding: 0; border: 0; background: transparent; color: #287d6c; font-size: 10px; }
+    .reply-quote { max-width: 260px; margin: 0 0 4px; padding: 5px 8px; border-left: 2px solid #63a994; border-radius: 5px; background: rgba(40,125,108,.08); color: #607670; font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .media-button { display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 50%; background: #e8f2ee; color: #287d6c; font-size: 17px; }
+    .media-button:hover { background: #d5e9e0; }
+    .media-input { display: none; }
+    .media-attachment { display: grid; gap: 6px; margin-top: 7px; }
+    .media-attachment img, .media-attachment video { display: block; width: min(270px, 100%); max-height: 240px; border-radius: 10px; object-fit: cover; background: #e7ecea; }
+    .media-save { width: max-content; padding: 4px 7px; border: 0; border-radius: 6px; background: #287d6c; color: #fff; font-size: 9px; text-decoration: none; }
+    .group-unread { display: inline-grid; place-items: center; min-width: 16px; height: 16px; margin-left: auto; padding: 0 4px; border-radius: 99px; background: #e27d62; color: #fff; font-size: 8px; font-weight: 700; }
+    .mobile-back { display: none; width: 28px; height: 28px; margin-right: 8px; border: 1px solid #c9ddd4; border-radius: 9px; background: #fff; color: #287d6c; font-size: 16px; }
+    .friend-avatar { background-size: cover; background-position: center; }
+    .friend-row-actions { display: flex; gap: 3px; justify-content: flex-end; }
+    .friend-row-actions button { padding: 2px; border: 0; background: transparent; color: var(--muted); font-size: 11px; }
+    .friend-row-actions button:hover { color: #b75b55; }
+    .request-actions { display: flex; gap: 5px; margin-top: 4px; }
+    .request-actions button { padding: 3px 6px; border: 0; border-radius: 5px; background: #287d6c; color: #fff; font-size: 8px; }
+    .request-actions .decline-request { background: #fff0ed; color: #b75b55; }
+    .leave-group-button { width: 100%; margin-top: 8px; padding: 10px; border: 1px solid #f0c9c2; border-radius: 10px; background: #fff3f1; color: #b75b55; font-size: 11px; font-weight: 700; }
+    .leave-group-button:hover { background: #ffe5e0; border-color: #df9c91; }
+    @media (max-width: 600px) { .sidebar-tools { grid-template-columns: 1fr 38px; margin-bottom: 11px; } .quick-create { padding: 9px; font-size: 11px; } .credits-button { font-size: 17px; } }
+    @media (max-width: 600px) {
+      body:not(.account-first) .app { display: grid; grid-template-columns: 148px minmax(0, 1fr); min-height: 100vh; }
+      body:not(.account-first) .sidebar { height: 100vh; min-height: 100vh; overflow-y: auto; padding: 12px 8px; border-right: 1px solid #e2ebe7; border-bottom: 0; }
+      body:not(.account-first) .brand { margin: 0 3px 13px; gap: 6px; }
+      body:not(.account-first) .brand-mark { width: 28px; height: 28px; font-size: 22px; }
+      body:not(.account-first) .brand strong { font-size: 12px; }
+      body:not(.account-first) .brand small { font-size: 8px; }
+      body:not(.account-first) .account-row { display: flex; justify-content: flex-end; padding: 0; margin: 0 2px 10px; border: 0; }
+      body:not(.account-first) .account-row .account-copy { display: none; }
+      body:not(.account-first) .account-button, body:not(.account-first) .settings-button { width: 25px; height: 25px; font-size: 12px; }
+      body:not(.account-first) .sidebar-tools { grid-template-columns: 1fr 30px; gap: 4px; margin: 0 1px 12px; }
+      body:not(.account-first) .quick-create { padding: 8px 4px; font-size: 9px; }
+      body:not(.account-first) .quick-create span { font-size: 16px; }
+      body:not(.account-first) .credits-button { font-size: 14px; }
+      body:not(.account-first) .section-label { margin: 3px 3px 7px; font-size: 9px; }
+      body:not(.account-first) .friends-add { gap: 3px; }
+      body:not(.account-first) .friends-add input { width: 0; padding: 8px 5px; font-size: 9px; }
+      body:not(.account-first) .friends-add button { width: 25px; flex: 0 0 25px; font-size: 14px; }
+      body:not(.account-first) .friend-list { display: grid; max-height: 210px; overflow-y: auto; overflow-x: hidden; }
+      body:not(.account-first) .friend-row { min-width: 0; grid-template-columns: 22px minmax(0, 1fr) 14px; gap: 4px; padding: 6px 2px; font-size: 9px; }
+      body:not(.account-first) .friend-avatar { width: 22px; height: 22px; font-size: 9px; }
+      body:not(.account-first) .friend-row small { font-size: 7px; }
+      body:not(.account-first) .create-friends-group { padding: 7px 3px; font-size: 8px; }
+      body:not(.account-first) .privacy-note { display: block; padding: 8px 4px; font-size: 8px; line-height: 1.4; }
+      body:not(.account-first) .privacy-note strong { font-size: 9px; }
+      body:not(.account-first) .main { min-width: 0; min-height: 100vh; padding: 0; }
+      body:not(.account-first) .home-view { min-height: 100vh; padding: 20px 12px; }
+      body:not(.account-first) .home-content h1 { font-size: 28px; }
+      body:not(.account-first) .home-content p { font-size: 11px; }
+      body:not(.account-first) .topbar { height: 58px; padding: 10px; }
+      body:not(.account-first) .layout { display: block; height: calc(100vh - 58px); }
+      body:not(.account-first) .chat-panel { min-height: calc(100vh - 58px); }
+      body:not(.account-first) .chat-head { min-height: 58px; padding: 7px 8px; }
+      body:not(.account-first) .chat-head h2 { max-width: 92px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+      body:not(.account-first) .participants { max-width: 105px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      body:not(.account-first) .status { display: none; }
+      body:not(.account-first) .messages { padding: 14px 8px 8px; }
+      body:not(.account-first) .message { max-width: 94%; gap: 5px; margin-bottom: 12px; }
+      body:not(.account-first) .message-avatar { flex-basis: 22px; height: 22px; font-size: 8px; }
+      body:not(.account-first) .bubble { padding: 8px 9px; font-size: 10px; }
+      body:not(.account-first) .composer { margin: 5px; padding-left: 8px; }
+      body:not(.account-first) .composer-hint { display: none; }
+      body:not(.account-first) .send-button { width: 30px; height: 30px; }
+      body:not(.account-first) .side-stack { display: none; }
+      body:not(.account-first) .mobile-back { display: inline-grid; place-items: center; }
+    }
+    .modal-backdrop { background: rgba(18, 43, 38, .28); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    .account-modal, .settings-modal, .credits-modal { border: 1px solid rgba(217, 232, 225, .95); border-radius: 22px; background: rgba(255,255,255,.98); box-shadow: 0 28px 80px rgba(24, 58, 49, .18); }
+    .account-modal { padding: 30px; }
+    .account-modal::before, .settings-modal::before { content: ''; display: block; width: 42px; height: 4px; margin: -12px auto 22px; border-radius: 99px; background: #dcebe4; }
+    .account-modal h2, .settings-modal h2 { color: #183a34; font-family: Georgia, serif; font-size: 28px; letter-spacing: -.3px; }
+    .account-modal > p { color: #71827d; font-size: 12px; line-height: 1.65; }
+    .settings-modal { padding: 30px; }
+    .settings-modal-header { margin-bottom: 5px; }
+    .settings-modal-header h2 { font-size: 28px; }
+    .modal-close { border-color: #dcebe4; background: #f7fbf9; color: #6c817a; transition: .2s ease; }
+    .modal-close:hover { border-color: #287d6c; background: #eaf6f0; color: #287d6c; transform: rotate(5deg); }
+    .settings-section { padding: 19px 0; border-top: 1px solid #edf3f0; }
+    .settings-section h3 { margin-bottom: 12px; color: #36564e; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+    .photo-row, .color-picker-row { padding: 12px; border: 1px solid #e7f0eb; border-radius: 14px; background: #fbfdfc; }
+    .settings-avatar { background: #e9f5f0; color: #287d6c; }
+    .photo-label, .group-photo-label { border-radius: 10px; background: #287d6c; font-size: 11px; transition: .2s ease; }
+    .photo-label:hover, .group-photo-label:hover { background: #216a5c; transform: translateY(-1px); }
+    .color-picker { border-color: #e1eee8; }
+    .color-picker-help { color: #81918c; }
+    .profile-field { gap: 7px; margin-bottom: 16px; }
+    .profile-field label { color: #71827d; font-size: 10px; font-weight: 700; letter-spacing: .9px; }
+    .profile-field input, .group-description { border-color: #dcebe4; border-radius: 11px; background: #fbfdfc; color: #183a34; transition: .2s ease; }
+    .profile-field input:focus, .group-description:focus { border-color: #63a994; box-shadow: 0 0 0 3px rgba(40,125,108,.1); }
+    .modal-actions { gap: 10px; margin-top: 22px; }
+    .modal-actions button, .credits-close { min-width: 96px; padding: 11px 15px; border-radius: 10px; font-size: 11px; transition: .2s ease; }
+    .modal-actions .cancel { background: #fff1ef; color: #b75b55; }
+    .modal-actions .confirm, .credits-close { background: #287d6c; color: #fff; }
+    .modal-actions button:hover, .credits-close:hover { transform: translateY(-1px); filter: brightness(1.04); }
+    .invite-list { gap: 9px; max-height: 280px; padding: 2px; }
+    .invite-person { min-height: 48px; border-color: #e3eee8; border-radius: 12px; background: #fbfdfc; }
+    .action-list { gap: 11px; margin-top: 20px; }
+    .action-list button { min-height: 58px; padding: 14px; border-color: #e1eee8; border-radius: 14px; background: #fbfdfc; transition: .2s ease; }
+    .action-list button span { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: #e9f5f0; color: #287d6c; font-size: 17px; }
+    .credits-modal { padding: 34px; }
+    .credits-heart { width: 72px; height: 72px; border-radius: 22px; box-shadow: 0 10px 25px rgba(211,111,97,.14); }
+    .action-list button,
+    .modal-actions .confirm,
+    .credits-close,
+    .photo-label,
+    .group-photo-label,
+    .invite-button,
+    .create-friends-group { background: #287d6c; border-color: #287d6c; color: #ffffff; }
+    .action-list button { box-shadow: 0 8px 18px rgba(40,125,108,.14); }
+    .action-list button:hover,
+    .modal-actions .confirm:hover,
+    .credits-close:hover,
+    .photo-label:hover,
+    .group-photo-label:hover,
+    .invite-button:hover,
+    .create-friends-group:hover { background: #216a5c; border-color: #216a5c; color: #ffffff; }
+    .action-list button:focus-visible,
+    .modal-actions .confirm:focus-visible,
+    .credits-close:focus-visible,
+    .photo-label:focus-within,
+    .group-photo-label:focus-within,
+    .invite-button:focus-visible,
+    .create-friends-group:focus-visible { outline: 3px solid rgba(40,125,108,.28); outline-offset: 2px; }
+    .action-list button span { background: rgba(255,255,255,.16); color: #ffffff; }
+    body.custom-color .action-list button,
+    body.custom-color .modal-actions .confirm,
+    body.custom-color .credits-close,
+    body.custom-color .photo-label,
+    body.custom-color .group-photo-label,
+    body.custom-color .invite-button,
+    body.custom-color .create-friends-group { background: var(--custom-accent-dark); border-color: var(--custom-accent-dark); color: var(--custom-accent-text); }
+    body.custom-color .action-list button:hover,
+    body.custom-color .modal-actions .confirm:hover,
+    body.custom-color .credits-close:hover,
+    body.custom-color .photo-label:hover,
+    body.custom-color .group-photo-label:hover,
+    body.custom-color .invite-button:hover,
+    body.custom-color .create-friends-group:hover { background: var(--custom-accent); border-color: var(--custom-accent); color: var(--custom-accent-text); }
+    body:not(.custom-color)[data-theme="light"] { --paper: #edf5f1; --panel: #ffffff; --line: #d4e5dd; --muted: #607670; background: #edf5f1; }
+    body:not(.custom-color)[data-theme="light"], body:not(.custom-color)[data-theme="light"] .app, body:not(.custom-color)[data-theme="light"] .main { background: #edf5f1; }
+    body:not(.custom-color)[data-theme="light"] .sidebar { background: #e3f0eb; border-color: #c9ddd4; }
+    body:not(.custom-color)[data-theme="light"] .account-row { background: #f2f8f5; border-color: #c9ddd4; }
+    body:not(.custom-color)[data-theme="light"] .topbar { background: #edf5f1; border-color: #d4e5dd; }
+    body:not(.custom-color)[data-theme="light"] .chat-panel { background: #ffffff; border-color: #d4e5dd; }
+    body:not(.custom-color)[data-theme="light"] .chat-head { background: #f8fcfa; border-color: #d4e5dd; }
+    body:not(.custom-color)[data-theme="light"] .messages { background: #f1f8f5; background-image: radial-gradient(circle at 15px 15px, rgba(40,125,108,.08) 1px, transparent 2px), radial-gradient(circle at 42px 37px, rgba(226,125,98,.06) 1px, transparent 2px); }
+    body:not(.custom-color)[data-theme="light"] .composer { background: #ffffff; border-color: #bdd8cc; }
+    body:not(.custom-color)[data-theme="light"] .side-stack { background: transparent; }
+    body:not(.custom-color)[data-theme="light"] .home-view { background: radial-gradient(circle at 50% 8%, #dcefe7 0, #edf5f1 48%, #f8fbfa 100%); }
+    body:not(.custom-color)[data-theme="light"] .auth-view { background: radial-gradient(circle at 50% 8%, #dcefe7 0, #edf5f1 48%, #f8fbfa 100%); }
+    body:not(.custom-color)[data-theme="light"] .support-card { background: #dcefe7; border-color: #c0ded1; }
+    body:not(.custom-color)[data-theme="light"] .quote-card { background: #fff0e9; border-color: #f2d7cc; }
+    body:not(.custom-color)[data-theme="light"] .help-card { background: #f8fcfa; border-color: #d4e5dd; }
+    body:not(.custom-color)[data-theme="light"] #groupList { background: #e7ecea; border-color: #d6dfdc; }
+    @media (max-width: 600px) { .account-modal, .settings-modal, .credits-modal { padding: 22px 18px; border-radius: 18px; } .account-modal h2, .settings-modal h2 { font-size: 24px; } .modal-actions { flex-wrap: wrap; } .modal-actions button { flex: 1 1 110px; } }
+  </style>
+</head>
+<body class="account-first">
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark">♧</div><div><strong>Ottoni</strong><small>Fale. Ouça. Cuide.</small></div></div>
+      <div class="account-row"><div class="account-copy"><strong id="accountName">Visitante</strong><small id="accountEmail">Crie sua conta local</small></div><button class="account-button" id="accountButton" type="button" aria-label="Abrir conta">S</button><button class="settings-button" id="settingsButton" type="button" aria-label="Abrir configurações">⚙</button></div>
+      <div class="sidebar-tools"><button class="quick-create" id="quickCreate" type="button"><span>＋</span> Nova ação</button><button class="credits-button" id="creditsButton" type="button" aria-label="Abrir créditos">♥</button></div>
+      <p class="section-label" id="friendsSectionLabel">Amigos e amizades</p>
+      <div class="friends-panel">
+        <div class="friends-add"><input id="friendInput" type="search" placeholder="Pesquisar amigos ou grupos" aria-label="Pesquisar amigos ou grupos"></div>
+        <div class="friend-suggestions" id="friendSuggestions" aria-live="polite"></div>
+        <div class="friend-list" id="friendList"></div>
+        <div class="friend-list" id="groupList"></div>
+      </div>
+      <div class="privacy-note"><strong>Seu espaço é privado</strong>As contas usam autenticação Supabase. Configure as políticas de segurança do banco antes de guardar conversas reais.</div>
+    </aside>
+
+    <main class="main">
+      <section class="auth-view" id="authView">
+        <div class="auth-card"><div class="auth-logo"><span>♧</span>Ottoni</div><h1 id="authHeading">Crie sua conta</h1><p id="authDescription">Entre em um espaço seguro para conversar, criar grupos e cuidar da sua mente.</p><div class="profile-field" id="authAccountNameField"><label>Nome de usuário</label><input id="authAccountName" type="text" autocomplete="username" placeholder="Como você quer ser encontrado?" maxlength="40"></div><div class="profile-field" id="authNameField"><label>Gmail</label><input id="authUsername" type="email" autocomplete="email" placeholder="seuemail@gmail.com"></div><div class="profile-field"><label>Senha</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="Mínimo de 6 caracteres"></div><div class="profile-field" id="authConfirmField"><label>Confirmar senha</label><input id="authConfirmPassword" type="password" autocomplete="new-password" placeholder="Digite a senha novamente"></div><button class="auth-submit" id="authSubmit" type="button">Criar conta</button><div class="oauth-divider"><span>ou</span></div><button class="google-submit" id="googleSignIn" type="button"><span class="google-mark">G</span> Continuar com Google</button><button class="auth-switch" id="authSwitch" type="button">Já tenho uma conta: entrar</button><button class="preview-switch" id="previewSwitch" type="button">→ Ver segunda área (prévia)</button><p class="auth-disclaimer">Seus dados de conta serão protegidos pelo Supabase.</p></div>
+      </section>
+      <div class="app-view" id="appView" hidden>
+      <section class="home-view" id="homeView">
+        <div class="home-content"><div class="home-symbol">◌</div><p class="eyebrow">um espaço para conversar</p><h1>Crie um grupo de conversa.</h1><p>Convide uma ou mais pessoas para conversar, compartilhar reflexões e estudar psicologia juntas. A IA só participa quando o grupo chamar por /analisar.</p><button class="start-chat" id="startChat" type="button">Criar grupo de conversa <span>↗</span></button><p class="home-note">Você continua no controle de quem participa da conversa.</p></div>
+      </section>
+      <section class="chat-view" id="chatView" hidden>
+        <header class="topbar"><div><button class="mobile-back" id="mobileBack" type="button" aria-label="Voltar para grupos">‹</button><span><p class="eyebrow">conversa privada · hoje</p><h1>Como você está hoje?</h1></span></div><div class="avatar" id="avatar">S</div></header>
+        <div class="layout">
+        <section class="chat-panel">
+          <div class="chat-head"><div class="chat-title"><div class="chat-symbol" id="groupChatSymbol">♙</div><div><h2 id="chatTitle">Psicóloga Online</h2><p class="online" id="chatSubtitle"><i></i> Online</p><span class="participants" id="participants">Conversa entre pessoas</span></div></div><div class="status"><span class="ai-badge" id="aiStatus">IA desligada</span><button class="invite-button" id="inviteFriendsButton" type="button">＋ Convidar</button><button class="group-info-button" id="groupInfoButton" type="button" aria-label="Informações do grupo">⋮</button></div></div>
+          <div class="messages" id="messages"></div>
+          <form class="composer" id="messageForm"><div class="reply-preview" id="replyPreview"><span id="replyPreviewText"></span><button id="cancelReply" type="button" aria-label="Cancelar resposta">×</button></div><textarea id="messageInput" placeholder="Escreva uma mensagem ou use /iaon, /iaoff..." aria-label="Sua mensagem"></textarea><div class="composer-bottom"><span class="composer-hint">/iaon liga · /iaoff desliga · /analisar chama</span><span style="display:flex;align-items:center;gap:6px"><label class="media-button" for="mediaInput" title="Adicionar foto ou vídeo" aria-label="Adicionar foto ou vídeo">＋<input class="media-input" id="mediaInput" type="file" accept="image/*,video/*"></label><button class="send-button" type="submit">Enviar <span>↗</span></button></span></div></form>
+        </section>
+
+        <aside class="side-stack">
+          <section class="support-card support-hero"><div class="support-icon">♧</div><h3>Cuidar da sua mente<br>também é importante.</h3><p>Aqui você encontra apoio, orientação e um espaço seguro para conversar sobre o que sente.</p></section>
+          <section class="side-card quote-card">❝ <p>“Falar sobre o que sentimos é o primeiro passo para se sentir melhor.”</p><strong>♥</strong></section>
+          <section class="help-card"><strong>♧ &nbsp; Precisa de ajuda agora?</strong><span>Fale com um profissional</span></section>
+          <section class="side-card profile-hidden"><h3>Sobre você</h3><div class="profile-field"><label>Como podemos chamar você?</label><input id="nameInput" type="text" placeholder="Seu nome"></div><div class="profile-field"><label>O que você estuda?</label><input id="topicInput" type="text" placeholder="Ex.: ansiedade"></div><button class="save-profile" id="saveProfile" type="button">Salvar informações</button></section>
+        </aside>
+        </div>
+      </section>
+      </div>
+    </main>
+  </div>
+  <div class="modal-backdrop" id="accountModal" hidden>
+    <section class="account-modal" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+      <h2 id="accountTitle">Criar sua conta</h2>
+      <p id="accountDescription">Crie uma conta para entrar no seu espaço a partir de outros dispositivos.</p>
+      <div class="profile-field"><label>Seu nome</label><input id="accountNameInput" type="text" placeholder="Como podemos chamar você?"></div>
+      <div class="profile-field"><label>E-mail</label><input id="accountEmailInput" type="email" placeholder="voce@email.com"></div>
+      <div class="profile-field"><label>Senha</label><input id="accountPasswordInput" type="password" placeholder="Mínimo de 6 caracteres"></div>
+      <div class="modal-actions"><button class="cancel" id="cancelAccount" type="button">Cancelar</button><button class="confirm" id="createAccount" type="button">Criar conta</button></div>
+      <button class="account-mode" id="accountMode" type="button">Já tenho uma conta: entrar</button>
+    </section>
+  </div>
+  <div class="modal-backdrop" id="settingsModal" hidden>
+    <section class="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="settings-modal-header"><h2 id="settingsTitle">Configurações</h2><button class="modal-close" id="closeSettingsX" type="button" aria-label="Fechar configurações">×</button></div>
+      <div class="settings-section"><h3>Foto de perfil</h3><div class="photo-row"><div class="settings-avatar" id="settingsAvatar">S</div><label class="photo-label">Escolher foto<input id="profilePhoto" type="file" accept="image/*"></label></div></div>
+      <div class="settings-section"><h3>Cor do site</h3><div class="color-picker-row"><input class="color-picker" id="siteColor" type="color" value="#16b592" aria-label="Escolher cor do site"><span class="color-picker-help">Escolha uma cor. Ela será aplicada ao menu, chat, mensagens, cartões e botões.</span></div></div>
+      <div class="settings-section"><button class="logout-button" id="logoutButton" type="button">Sair da conta</button></div>
+    </section>
+  </div>
+  <div class="modal-backdrop" id="groupModal" hidden>
+    <section class="account-modal" role="dialog" aria-modal="true" aria-labelledby="groupTitle">
+      <h2 id="groupTitle">Criar grupo</h2>
+      <p>Crie uma conversa com uma ou mais pessoas. Separe os nomes por vírgula.</p>
+      <div class="profile-field"><label>Nome do grupo</label><input id="groupNameInput" type="text" placeholder="Ex.: Grupo de estudos"></div>
+      <p class="group-modal-note">O grupo será criado vazio. Depois você poderá convidar seus amigos pela aba da conversa. A IA só responde quando alguém usar `/analisar`.</p>
+      <div class="modal-actions"><button class="cancel" id="cancelGroup" type="button">Cancelar</button><button class="confirm" id="createGroup" type="button">Criar grupo</button></div>
+    </section>
+  </div>
+  <div class="modal-backdrop" id="actionModal" hidden>
+    <section class="account-modal" role="dialog" aria-modal="true" aria-labelledby="actionTitle">
+      <div class="settings-modal-header"><h2 id="actionTitle">O que vamos criar?</h2><button class="modal-close" id="closeAction" type="button" aria-label="Fechar ações">×</button></div>
+      <p>Escolha uma ação para continuar sua conversa.</p>
+      <div class="action-list"><button id="openFriendsAction" type="button"><span>♧</span> Adicionar amigos</button><button id="openGroupAction" type="button"><span>＋</span> Criar grupo</button></div>
+    </section>
+  </div>
+  <div class="modal-backdrop" id="creditsModal" hidden>
+    <section class="credits-modal" role="dialog" aria-modal="true" aria-labelledby="creditsTitle"><div class="credits-heart">♥</div><h2 id="creditsTitle">Feito com carinho</h2><p>“Esse cantinho foi feito para eu e meu amiguinho conversarmos, rirmos e cuidarmos um do outro.”</p><button class="credits-close" id="closeCredits" type="button">Fechar</button></section>
+  </div>
+  <div class="modal-backdrop" id="inviteModal" hidden>
+    <section class="account-modal" role="dialog" aria-modal="true" aria-labelledby="inviteTitle">
+      <div class="settings-modal-header"><h2 id="inviteTitle">Convidar amigos</h2><button class="modal-close" id="closeInvite" type="button" aria-label="Fechar convites">×</button></div>
+      <p>Escolha as pessoas que participarão desta conversa.</p>
+      <div class="invite-list" id="inviteList"></div>
+      <div class="modal-actions"><button class="confirm" id="confirmInvite" type="button">Adicionar ao grupo</button></div>
+    </section>
+  </div>
+  <div class="modal-backdrop" id="groupInfoModal" hidden>
+    <section class="account-modal" role="dialog" aria-modal="true" aria-labelledby="groupInfoTitle">
+      <div class="settings-modal-header"><h2 id="groupInfoTitle">Informações do grupo</h2><button class="modal-close" id="closeGroupInfo" type="button" aria-label="Fechar informações">×</button></div>
+      <div class="profile-field"><label>Nome do grupo</label><input id="groupTitleInput" type="text" placeholder="Nome do grupo"></div>
+      <div class="profile-field"><label>Descrição</label><textarea class="group-description" id="groupDescriptionInput" placeholder="Sobre este grupo..."></textarea></div>
+      <div class="settings-section"><h3>Imagem do grupo</h3><div class="photo-row"><div class="group-photo-preview" id="groupPhotoPreview">♙</div><label class="group-photo-label">Adicionar imagem<input id="groupPhotoInput" type="file" accept="image/*"></label></div></div>
+      <div class="modal-actions"><button class="cancel" id="cancelGroupInfo" type="button">Cancelar</button><button class="confirm" id="saveGroupInfo" type="button">Confirmar</button></div><button class="leave-group-button" id="leaveGroupButton" type="button">Sair deste grupo</button>
+    </section>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const supabaseUrl = 'https://hiocmjokswkvhxoolrlm.supabase.co';
+    const supabaseAnonKey = 'sb_publishable_kyS6fhc-HbwHkajaLBIutw_sKjiK80X';
+    const supabaseConfigured = !supabaseUrl.startsWith('COLE_') && !supabaseAnonKey.startsWith('COLE_');
+    const supabaseClient = supabaseConfigured ? window.supabase.createClient(supabaseUrl, supabaseAnonKey) : null;
+    localStorage.removeItem('ancora-psicologia-v1');
+    const storageKey = 'ancora-psicologia-v2';
+    const starterMessages = [
+      { id: 1, author: 'bot', text: 'Olá, seja bem-vindo. Este é um lugar para você registrar o que sente e refletir com calma. O que trouxe você aqui hoje?', time: '09:41' },
+      { id: 2, author: 'user', text: 'Tenho sentido dificuldade para desacelerar meus pensamentos no fim do dia.', time: '09:43' },
+      { id: 3, author: 'bot', text: 'Parece cansativo terminar o dia com a mente ainda ligada. Quando você percebe que isso começa a acontecer, existe algum pensamento ou situação que costuma aparecer primeiro?', time: '09:44' }
+    ];
+    let state = JSON.parse(localStorage.getItem(storageKey) || 'null') || { name: '', topic: '', account: null, group: null, messages: starterMessages };
+    state.friends ||= [];
+    state.groups ||= [];
+    state.friendRequests ||= [];
+    state.replyTo ||= null;
+    state.theme = state.theme === 'teal' || !state.theme ? 'light' : state.theme;
+    state.profilePhoto ||= '';
+    state.group ||= null;
+    state.aiEnabled = state.aiEnabled === true;
+    state.customColor ||= '';
+    const messagesEl = document.getElementById('messages');
+    const input = document.getElementById('messageInput');
+    const now = () => new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const save = () => localStorage.setItem(storageKey, JSON.stringify(state));
+    function updateGroupSummary(message) {
+      if (!state.group) return;
+      const group = state.groups.find(item => item.id === state.group.id || item.name === state.group.name);
+      if (group) { group.lastText = message.text; group.lastTime = message.time; }
+    }
+    const initials = () => (state.name || 'S').trim().slice(0, 1).toUpperCase();
+    function colorMix(hex, amount, target = '#03191a') {
+      const value = hex.replace('#', '');
+      const source = [parseInt(value.slice(0, 2), 16), parseInt(value.slice(2, 4), 16), parseInt(value.slice(4, 6), 16)];
+      const destination = target.replace('#', '');
+      const targetRgb = [parseInt(destination.slice(0, 2), 16), parseInt(destination.slice(2, 4), 16), parseInt(destination.slice(4, 6), 16)];
+      return `#${source.map((channel, index) => Math.round(channel + (targetRgb[index] - channel) * amount).toString(16).padStart(2, '0')).join('')}`;
+    }
+    function relativeLuminance(hex) {
+      const value = hex.replace('#', '');
+      const channels = [0, 2, 4].map(index => parseInt(value.slice(index, index + 2), 16) / 255).map(channel => channel <= .03928 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4);
+      return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722;
+    }
+    function readableText(background, light = '#ffffff', dark = '#14221f') {
+      return relativeLuminance(background) > .48 ? dark : light;
+    }
+    function applyAppearance() {
+      document.body.dataset.theme = state.theme || 'teal';
+      document.body.classList.toggle('custom-color', Boolean(state.customColor));
+      if (state.customColor) {
+        const color = state.customColor;
+        const isLightColor = relativeLuminance(color) > .48;
+        const surfaceTarget = isLightColor ? '#ffffff' : '#03191a';
+        const accentTarget = isLightColor ? '#14221f' : '#03191a';
+        document.body.style.setProperty('--custom-accent', color);
+        document.body.style.setProperty('--custom-light', colorMix(color, .35, isLightColor ? '#14221f' : '#ffffff'));
+        document.body.style.setProperty('--custom-accent-dark', colorMix(color, .35, accentTarget));
+        document.body.style.setProperty('--custom-soft', colorMix(color, .78, surfaceTarget));
+        document.body.style.setProperty('--custom-bg', colorMix(color, .92, surfaceTarget));
+        document.body.style.setProperty('--custom-sidebar', colorMix(color, .84, surfaceTarget));
+        document.body.style.setProperty('--custom-panel', colorMix(color, .78, surfaceTarget));
+        document.body.style.setProperty('--custom-input', colorMix(color, .68, surfaceTarget));
+        document.body.style.setProperty('--custom-message', colorMix(color, .55, isLightColor ? '#f0f4f1' : '#263f46'));
+        document.body.style.setProperty('--custom-border', colorMix(color, .35, isLightColor ? '#c8ddd3' : '#124447'));
+        const customPanel = colorMix(color, .78, surfaceTarget);
+        const customInput = colorMix(color, .68, surfaceTarget);
+        const customBackground = colorMix(color, .92, surfaceTarget);
+        document.body.style.setProperty('--custom-text', readableText(customBackground));
+        document.body.style.setProperty('--custom-muted', readableText(customBackground, '#d7e6e1', '#52645e'));
+        document.body.style.setProperty('--custom-accent-text', readableText(colorMix(color, .35, accentTarget)));
+        document.body.style.setProperty('--custom-panel-text', readableText(customPanel));
+        document.body.style.setProperty('--custom-input-text', readableText(customInput));
+        document.getElementById('siteColor').value = color;
+      }
+      const avatar = document.getElementById('avatar');
+      const settingsAvatar = document.getElementById('settingsAvatar');
+      [avatar, settingsAvatar].forEach(element => {
+        if (!element) return;
+        element.textContent = state.profilePhoto ? '' : initials();
+        element.style.backgroundImage = state.profilePhoto ? `url("${state.profilePhoto}")` : '';
+        element.style.backgroundSize = 'cover';
+        element.style.backgroundPosition = 'center';
+      });
+    }
+    const friendName = friend => typeof friend === 'string' ? friend : friend.username;
+    let realtimeChannel = null;
+    function subscribeToGroup(groupId) {
+      if (!supabaseClient || !groupId) return;
+      if (realtimeChannel) supabaseClient.removeChannel(realtimeChannel);
+      realtimeChannel = supabaseClient.channel(`ottoni-group-${groupId}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `group_id=eq.${groupId}` }, payload => {
+        const message = payload.new;
+        if (state.messages.some(item => item.remoteId === message.id)) return;
+        const replied = message.reply_to_id ? state.messages.find(item => item.remoteId === message.reply_to_id) : null;
+        const liveMessage = { id: Date.now() + Math.random(), remoteId: message.id, replyToId: message.reply_to_id, replyText: replied?.text || '', author: message.is_ai || message.author_id !== state.account?.id ? 'bot' : 'user', text: message.content, time: new Date(message.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) };
+        state.messages.push(liveMessage);
+        if (state.group?.id !== groupId) { const group = state.groups.find(item => item.id === groupId); if (group) group.unread = (group.unread || 0) + 1; }
+        updateGroupSummary(liveMessage);
+        save(); render();
+      }).subscribe();
+    }
+    function render() {
+      messagesEl.innerHTML = state.messages.map(message => `<article class="message ${message.author === 'user' ? 'mine' : 'bot'}"><div class="message-avatar">${message.author === 'user' ? initials() : '✦'}</div><div>${message.replyText ? `<div class="reply-quote">↪ ${escapeHtml(message.replyText)}</div>` : ''}<div class="bubble">${escapeHtml(message.text).replace(/\n/g, '<br>')}</div><div class="message-meta">${message.time}<button class="reply-action" type="button" data-reply="${message.id}">Responder</button></div>${message.author === 'user' ? `<div class="message-actions"><button type="button" data-edit="${message.id}">Editar mensagem</button></div>` : ''}</div></article>`).join('');
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      const reflectionCount = document.getElementById('reflectionCount');
+      const progressBar = document.getElementById('progressBar');
+      if (reflectionCount) reflectionCount.textContent = `${Math.min(state.messages.filter(m => m.author === 'user').length, 5)} / 5`;
+      if (progressBar) progressBar.style.width = `${Math.min(state.messages.filter(m => m.author === 'user').length / 5 * 100, 100)}%`;
+      applyAppearance();
+      document.getElementById('accountName').textContent = state.account?.name || state.name || 'Visitante';
+      document.getElementById('accountEmail').textContent = state.account?.username ? `@${state.account.username}` : 'Entre na sua conta';
+      document.getElementById('chatTitle').textContent = state.group?.name || 'Âncora IA';
+      document.getElementById('chatSubtitle').textContent = state.group ? 'Conversa entre pessoas' : 'Especialista em psicologia e cérebro humano';
+      document.getElementById('participants').textContent = state.group ? `Você, ${state.group.people.join(', ')}` : 'Você';
+      document.getElementById('aiStatus').textContent = state.aiEnabled ? 'IA ligada' : 'IA desligada';
+      document.getElementById('aiStatus').style.color = state.aiEnabled ? '#7ff0bd' : '#8aa9a4';
+      const groupSymbol = document.getElementById('groupChatSymbol');
+      if (groupSymbol) { groupSymbol.textContent = state.group?.photo ? '' : '♙'; groupSymbol.style.backgroundImage = state.group?.photo ? `url("${state.group.photo}")` : ''; groupSymbol.style.backgroundSize = 'cover'; groupSymbol.style.backgroundPosition = 'center'; }
+      document.getElementById('friendList').innerHTML = state.friends.length ? state.friends.map((friend, index) => { const name = friendName(friend); const photoStyle = friend.photo ? ` style="background-image:url('${escapeHtml(friend.photo)}')"` : ''; return `<div class="friend-row"><span class="friend-avatar"${photoStyle}>${friend.photo ? '' : escapeHtml(name.slice(0, 1).toUpperCase())}</span><span>${escapeHtml(name)}<small>Amigo</small></span><span class="friend-row-actions"><button type="button" data-remove-friend="${index}" aria-label="Remover ${escapeHtml(name)}">×</button><button type="button" data-block-friend="${index}" aria-label="Bloquear ${escapeHtml(name)}">⊘</button></span></div>`; }).join('') : '<small style="padding:8px;color:var(--muted)">Adicione pessoas para criar um grupo.</small>';
+      const groupList = document.getElementById('groupList');
+      if (groupList) groupList.innerHTML = state.groups.length ? `<small class="group-list-title">Grupos</small>${state.groups.map((group, index) => { const photoStyle = group.photo ? ` style="background-image:url('${escapeHtml(group.photo)}')"` : ''; return `<button class="group-row ${state.group?.id === group.id ? 'active' : ''}" type="button" data-group-index="${index}"><span${photoStyle}>${group.photo ? '' : '♧'}</span><span><strong>${escapeHtml(group.name)}</strong><small>${escapeHtml(group.lastText || `${group.people?.length || 0} participante(s)`)}${group.lastTime ? ` · ${escapeHtml(group.lastTime)}` : ''}</small></span>${group.unread ? `<b class="group-unread">${Math.min(group.unread, 9)}${group.unread > 9 ? '+' : ''}</b>` : ''}</button>`; }).join('')}` : '';
+      const requestRows = state.friendRequests.filter(request => request.status === 'pending').map(request => `<div class="friend-suggestion"><span class="friend-avatar">＋</span><span><strong>${escapeHtml(request.username || 'Novo amigo')}</strong><small>Pedido de amizade</small><span class="request-actions"><button type="button" data-accept-request="${request.id}">Aceitar</button><button class="decline-request" type="button" data-decline-request="${request.id}">Recusar</button></span></span></div>`).join('');
+      const suggestions = document.getElementById('friendSuggestions');
+      if (suggestions && !suggestions.classList.contains('visible') && requestRows) { suggestions.innerHTML = requestRows; suggestions.classList.add('visible'); }
+      const requestLabel = document.getElementById('friendsSectionLabel');
+      if (requestLabel) requestLabel.textContent = state.friendRequests.filter(request => request.status === 'pending').length ? `Amigos e amizades · ${state.friendRequests.filter(request => request.status === 'pending').length} pedido(s)` : 'Amigos e amizades';
+      const replyPreview = document.getElementById('replyPreview');
+      const replyPreviewText = document.getElementById('replyPreviewText');
+      if (replyPreview && replyPreviewText) { replyPreview.classList.toggle('visible', Boolean(state.replyTo)); replyPreviewText.textContent = state.replyTo ? `Respondendo: ${state.replyTo.text}` : ''; }
+    }
+    function escapeHtml(value) { return value.replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' }[char])); }
+    function showToast(text) { const toast = document.getElementById('toast'); toast.textContent = text; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2400); }
+    let authRequestInFlight = false;
+    const authCooldownKey = 'ancora-auth-cooldown-until';
+    function isRateLimitError(error) { return Boolean(error && (error.status === 429 || /rate limit|too many requests|email rate limit/i.test(error.message || ''))); }
+    function authCooldownRemaining() { return Math.max(0, Number(localStorage.getItem(authCooldownKey) || 0) - Date.now()); }
+    function formatAuthError(error) {
+      if (isRateLimitError(error)) {
+        localStorage.setItem(authCooldownKey, String(Date.now() + 120000));
+        return 'O Supabase atingiu o limite de tentativas. Aguarde alguns minutos antes de tentar novamente.';
+      }
+      return error?.message || 'Não foi possível concluir a autenticação.';
+    }
+    async function runAuthRequest(button, request) {
+      if (authRequestInFlight) return null;
+      const remaining = authCooldownRemaining();
+      if (remaining > 0) { showToast('Aguarde alguns minutos antes de tentar novamente.'); return null; }
+      authRequestInFlight = true;
+      const originalText = button.textContent;
+      button.disabled = true;
+      button.textContent = 'Aguarde...';
+      try { return await request(); }
+      finally { authRequestInFlight = false; button.disabled = false; button.textContent = originalText; }
+    }
+    async function createRemoteGroup(name) {
+      if (!supabaseClient || !state.account?.id) return null;
+      const result = await supabaseClient.from('groups').insert({ owner_id: state.account.id, name, ai_enabled: state.aiEnabled }).select().single();
+      if (result.error) throw result.error;
+      const membership = await supabaseClient.from('group_members').insert({ group_id: result.data.id, user_id: state.account.id });
+      if (membership.error) throw membership.error;
+      return result.data;
+    }
+    async function saveRemoteMessage(message) {
+      if (!supabaseClient || !state.account?.id || !state.group?.id || message.author !== 'user') return;
+      const result = await supabaseClient.from('messages').insert({ group_id: state.group.id, author_id: state.account.id, content: message.text, reply_to_id: message.replyToId || null, is_ai: false }).select('id').single();
+      if (result.error) showToast('Mensagem local salva; execute o SQL do banco para sincronizar');
+      else message.remoteId = result.data.id;
+    }
+    async function saveRemoteMessageEdit(message) {
+      if (!supabaseClient || !state.account?.id || !message.remoteId) return true;
+      const result = await supabaseClient.from('messages').update({ content: message.text, edited_at: new Date().toISOString() }).eq('id', message.remoteId).eq('author_id', state.account.id);
+      if (result.error) { showToast('Mensagem atualizada localmente, mas não no banco'); return false; }
+      return true;
+    }
+    async function saveRemoteAiMessage(message) {
+      if (!supabaseClient || !state.account?.id || !state.group?.id || message.author !== 'bot') return;
+      const result = await supabaseClient.from('messages').insert({ group_id: state.group.id, author_id: null, content: message.text, is_ai: true }).select('id').single();
+      if (result.error) showToast('Resposta da IA salva localmente; verifique as políticas do banco');
+      else message.remoteId = result.data.id;
+    }
+    async function loadRemoteGroups() {
+      if (!supabaseClient || !state.account?.id) return;
+      const result = await supabaseClient.from('groups').select('id, name, description, photo, ai_enabled, created_at').order('created_at', { ascending: false });
+      if (result.error || !result.data) return;
+      state.groups = result.data.map(group => ({ id: group.id, name: group.name, people: [], description: group.description || '', photo: group.photo || '', aiEnabled: group.ai_enabled }));
+      save();
+      render();
+    }
+    async function loadRemoteConversation(groupId = null) {
+      if (!supabaseClient || !state.account?.id) return;
+      const groups = groupId
+        ? await supabaseClient.from('groups').select('*').eq('id', groupId).limit(1)
+        : await supabaseClient.from('groups').select('*').order('created_at', { ascending: false }).limit(1);
+      if (!groups.data?.length) return;
+      const group = groups.data[0];
+      const members = await supabaseClient.from('group_members').select('user_id').eq('group_id', group.id);
+      const memberIds = members.data?.map(member => member.user_id) || [state.account.id];
+      const profiles = await supabaseClient.from('profiles').select('id, username').in('id', memberIds);
+      const people = profiles.data?.filter(profile => profile.id !== state.account.id).map(profile => profile.username) || [];
+      const remoteMessages = await supabaseClient.from('messages').select('id, author_id, content, reply_to_id, is_ai, created_at, edited_at').eq('group_id', group.id).order('created_at');
+      const latestMessage = remoteMessages.data?.at(-1);
+      state.group = { id: group.id, name: group.name, description: group.description || '', photo: group.photo || '', people, memberIds, aiEnabled: group.ai_enabled };
+      state.groups = [{ id: group.id, name: group.name, people, lastText: latestMessage?.content || '', lastTime: latestMessage ? new Date(latestMessage.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '' }, ...state.groups.filter(item => item.id !== group.id)];
+      state.aiEnabled = group.ai_enabled;
+      if (remoteMessages.data?.length) state.messages = remoteMessages.data.map(message => ({ id: Date.now() + Math.random(), remoteId: message.id, replyToId: message.reply_to_id, replyText: message.reply_to_id ? remoteMessages.data.find(item => item.id === message.reply_to_id)?.content : '', author: message.is_ai || message.author_id !== state.account.id ? 'bot' : 'user', text: message.content, time: new Date(message.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) }));
+      subscribeToGroup(group.id);
+      save(); render();
+    }
+    async function askPsychologyAI(text) {
+      const question = text.replace(/^\/analisar\s*/i, '').trim();
+      const usageDay = new Date().toISOString().slice(0, 10);
+      if (state.aiUsage?.day !== usageDay) state.aiUsage = { day: usageDay, count: 0 };
+      if (state.aiUsage.count >= 15) return 'Você já usou as 15 análises gratuitas de hoje. Amanhã a contagem recomeça.';
+      state.aiUsage.count += 1;
+      save();
+      if (window.location.protocol === 'file:') return `Análise inicial: percebo que você está tentando compreender melhor "${question || 'essa situação'}". Observe quais pensamentos aparecem, o que você sente no corpo e o que aconteceu antes disso. Esta reflexão não é diagnóstico nem substitui psicoterapia ou atendimento profissional.`;
+      try {
+        const session = supabaseClient ? (await supabaseClient.auth.getSession()).data.session : null;
+        if (!session?.access_token) throw new Error('Sessão necessária');
+        const response = await fetch('/api/analisar', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ question, messages: state.messages.slice(-12), role: 'assistente de psicologia e cérebro humano' }) });
+        if (!response.ok) throw new Error('API indisponível');
+        const data = await response.json();
+        return data.answer || data.message || 'Não consegui interpretar a resposta da IA.';
+      } catch (error) {
+        return `Análise inicial: percebo que você está tentando compreender melhor "${question || 'essa situação'}". Observe quais pensamentos aparecem, o que você sente no corpo e o que aconteceu antes disso. Esta reflexão não é diagnóstico nem substitui psicoterapia ou atendimento profissional.`;
+      }
+    }
+    async function sendMessage(text) {
+      const cleanText = text.trim();
+      if (!cleanText) return;
+      const userMessage = { id: Date.now(), author: 'user', text: cleanText, time: now(), replyToId: state.replyTo?.remoteId || null, replyText: state.replyTo?.text || '' };
+      state.messages.push(userMessage);
+      updateGroupSummary(userMessage);
+      await saveRemoteMessage(userMessage);
+      state.replyTo = null;
+      save(); render(); input.value = '';
+      if (/^\/iaon$/i.test(cleanText)) {
+        state.aiEnabled = true;
+        if (supabaseClient && state.group?.id) await supabaseClient.from('groups').update({ ai_enabled: true }).eq('id', state.group.id);
+        const aiOnMessage = { id: Date.now() + 1, author: 'bot', text: 'IA ligada neste chat. Use /analisar quando quiser uma análise.', time: now() };
+        state.messages.push(aiOnMessage);
+        updateGroupSummary(aiOnMessage);
+        await saveRemoteAiMessage(aiOnMessage);
+        showToast('IA ligada');
+      } else if (/^\/iaoff$/i.test(cleanText)) {
+        state.aiEnabled = false;
+        if (supabaseClient && state.group?.id) await supabaseClient.from('groups').update({ ai_enabled: false }).eq('id', state.group.id);
+        const aiOffMessage = { id: Date.now() + 1, author: 'bot', text: 'IA desligada neste chat. Ela não responderá até você usar /iaon.', time: now() };
+        state.messages.push(aiOffMessage);
+        updateGroupSummary(aiOffMessage);
+        await saveRemoteAiMessage(aiOffMessage);
+        showToast('IA desligada');
+      } else if (/^\/analisar\b/i.test(cleanText) && state.aiEnabled) {
+        showToast('A IA está analisando sua mensagem');
+        const answer = await askPsychologyAI(cleanText);
+        const aiMessage = { id: Date.now() + 1, author: 'bot', text: answer, time: now() };
+        state.messages.push(aiMessage);
+        updateGroupSummary(aiMessage);
+        await saveRemoteAiMessage(aiMessage);
+      } else if (/^\/analisar\b/i.test(cleanText)) showToast('A IA está desligada. Use /iaon para ativá-la');
+      else showToast('Mensagem salva. Use /iaon para ativar a IA');
+      save(); render();
+    }
+    document.getElementById('messageForm').addEventListener('submit', event => { event.preventDefault(); sendMessage(input.value); });
+    input.addEventListener('keydown', event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(input.value); } });
+    document.getElementById('cancelReply').addEventListener('click', () => { state.replyTo = null; document.getElementById('replyPreview').classList.remove('visible'); });
+    messagesEl.addEventListener('click', async event => {
+      const replyButton = event.target.closest('[data-reply]');
+      if (replyButton) {
+        const message = state.messages.find(item => item.id === Number(replyButton.dataset.reply));
+        if (message) {
+          state.replyTo = message;
+          document.getElementById('replyPreviewText').textContent = `Respondendo: ${message.text}`;
+          document.getElementById('replyPreview').classList.add('visible');
+          input.focus();
+        }
+        return;
+      }
+      const button = event.target.closest('[data-edit]');
+      if (button) {
+        const message = state.messages.find(item => item.id === Number(button.dataset.edit));
+        const container = button.closest('.message');
+        const bubble = container.querySelector('.bubble');
+        bubble.innerHTML = `<textarea class="edit-input" aria-label="Editar mensagem">${escapeHtml(message.text)}</textarea><div class="message-actions"><button type="button" data-save-edit="${message.id}">Salvar</button><button type="button" data-cancel-edit>Cancelar</button></div>`;
+        bubble.querySelector('textarea').focus();
+        return;
+      }
+      const saveButton = event.target.closest('[data-save-edit]');
+      if (saveButton) {
+        const message = state.messages.find(item => item.id === Number(saveButton.dataset.saveEdit));
+        const edited = saveButton.closest('.bubble').querySelector('textarea').value.trim();
+        if (edited) {
+          message.text = edited;
+          message.time = `${message.time.replace(' · editada', '')} · editada`;
+          await saveRemoteMessageEdit(message);
+          save();
+          render();
+          showToast('Mensagem atualizada');
+        }
+        return;
+      }
+      if (event.target.closest('[data-cancel-edit]')) render();
+    });
+    const promptButton = document.getElementById('usePrompt');
+    if (promptButton) promptButton.addEventListener('click', () => { input.value = 'Hoje eu gostaria que alguém entendesse que '; input.focus(); });
+    document.getElementById('saveProfile').addEventListener('click', async () => {
+      state.name = document.getElementById('nameInput').value.trim();
+      state.topic = document.getElementById('topicInput').value.trim();
+      if (supabaseClient && state.account?.id) {
+        const { error } = await supabaseClient.from('profiles').upsert({ id: state.account.id, username: state.account.username, name: state.name, topic: state.topic });
+        if (error) { showToast('Perfil local salvo; crie a tabela profiles no Supabase'); return; }
+        showToast('Perfil salvo na sua conta');
+      } else showToast('Perfil salvo neste navegador');
+      save(); render();
+    });
+    const accountModal = document.getElementById('accountModal');
+    let accountMode = 'signup';
+    function updateAccountMode() {
+      const login = accountMode === 'login';
+      document.getElementById('accountTitle').textContent = login ? 'Entrar na sua conta' : 'Criar sua conta';
+      document.getElementById('accountDescription').textContent = login ? 'Use o mesmo e-mail e senha em qualquer dispositivo.' : 'Crie uma conta para entrar no seu espaço a partir de outros dispositivos.';
+      document.getElementById('accountNameInput').parentElement.style.display = login ? 'none' : 'grid';
+      document.getElementById('createAccount').textContent = login ? 'Entrar' : 'Criar conta';
+      document.getElementById('accountMode').textContent = login ? 'Ainda não tenho conta: criar agora' : 'Já tenho uma conta: entrar';
+    }
+    document.getElementById('accountButton').addEventListener('click', () => { document.getElementById('accountNameInput').value = state.account?.name || state.name; document.getElementById('accountEmailInput').value = state.account?.email || ''; accountMode = 'login'; updateAccountMode(); accountModal.hidden = false; });
+    document.getElementById('cancelAccount').addEventListener('click', () => { accountModal.hidden = true; });
+    const settingsModal = document.getElementById('settingsModal');
+    document.getElementById('settingsButton').addEventListener('click', () => { applyAppearance(); settingsModal.hidden = false; });
+    document.getElementById('closeSettingsX').addEventListener('click', () => { settingsModal.hidden = true; });
+    document.getElementById('siteColor').addEventListener('change', event => { state.customColor = event.target.value; save(); applyAppearance(); showToast('Cor aplicada em todo o site'); });
+    async function uploadMedia(file, folder) {
+      if (!supabaseClient || !state.account?.id) return null;
+      const extension = file.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+      const path = `${state.account.id}/${folder}-${Date.now()}.${extension}`;
+      const result = await supabaseClient.storage.from('ottoni-media').upload(path, file, { upsert: true, contentType: file.type });
+      if (result.error) return null;
+      return supabaseClient.storage.from('ottoni-media').getPublicUrl(path).data.publicUrl;
+    }
+    document.getElementById('profilePhoto').addEventListener('change', event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) { showToast('Escolha uma foto de até 2 MB'); return; }
+      uploadMedia(file, 'profile').then(url => {
+        if (url) {
+          state.profilePhoto = url;
+          supabaseClient.from('profiles').update({ photo: url }).eq('id', state.account.id);
+          save(); applyAppearance(); showToast('Foto de perfil salva no banco');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => { state.profilePhoto = reader.result; save(); applyAppearance(); showToast('Foto salva nesta prévia'); };
+        reader.readAsDataURL(file);
+      });
+    });
+    document.getElementById('logoutButton').addEventListener('click', async () => {
+      if (supabaseClient) await supabaseClient.auth.signOut();
+      state.account = null; save(); settingsModal.hidden = true; showAuthPage(); showToast('Você saiu da conta');
+    });
+    document.getElementById('accountMode').addEventListener('click', () => { accountMode = accountMode === 'login' ? 'signup' : 'login'; updateAccountMode(); });
+    const actionModal = document.getElementById('actionModal');
+    const creditsModal = document.getElementById('creditsModal');
+    document.getElementById('quickCreate').addEventListener('click', () => { actionModal.hidden = false; });
+    document.getElementById('closeAction').addEventListener('click', () => { actionModal.hidden = true; });
+    document.getElementById('openFriendsAction').addEventListener('click', () => { actionModal.hidden = true; document.getElementById('friendInput').focus(); showToast('Digite o nome de usuário do seu amigo'); });
+    document.getElementById('openGroupAction').addEventListener('click', () => { actionModal.hidden = true; openGroupCreation(); });
+    document.getElementById('creditsButton').addEventListener('click', () => { creditsModal.hidden = false; });
+    document.getElementById('closeCredits').addEventListener('click', () => { creditsModal.hidden = true; });
+    document.getElementById('createAccount').addEventListener('click', async event => {
+      if (!supabaseConfigured) { showToast('Configure a URL e a chave pública do Supabase no código'); return; }
+      const name = document.getElementById('accountNameInput').value.trim();
+      const email = normalizeGmail(document.getElementById('accountEmailInput').value);
+      const password = document.getElementById('accountPasswordInput').value;
+      if (!isValidGmail(email)) { showToast('Use um Gmail válido, como voce@gmail.com'); return; }
+      if (password.length < 6 || (accountMode === 'signup' && !name)) { showToast('Preencha os campos corretamente'); return; }
+      const username = name || usernameFromGmail(email);
+      const result = await runAuthRequest(event.currentTarget, () => accountMode === 'signup'
+        ? supabaseClient.auth.signUp({ email, password, options: { data: { name: username, username }, emailRedirectTo: window.location.origin } })
+        : supabaseClient.auth.signInWithPassword({ email, password }));
+      if (!result) return;
+      if (result.error) {
+        const message = result.error.message || '';
+        if (/email not confirmed/i.test(message)) { showToast('Confirme seu Gmail primeiro. Enviamos um e-mail para você.'); return; }
+        showToast(formatAuthError(result.error));
+        return;
+      }
+      const user = result.data.user;
+      state.account = { id: user.id, username: user.user_metadata?.username || usernameFromGmail(email), name: user.user_metadata?.name || username, email: user.email };
+      state.name = state.account.name;
+      save(); render(); accountModal.hidden = true;
+      showToast(accountMode === 'signup' && !result.data.session ? 'Conta criada! Confira seu Gmail.' : 'Login realizado com sucesso');
+    });
+    let authMode = 'signup';
+    const normalizeGmail = value => value.trim().toLowerCase();
+    const isValidGmail = value => /^[^\s@]+@gmail\.com$/i.test(normalizeGmail(value));
+    const normalizeUsername = value => value.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9._-]/g, '').slice(0, 40);
+    const isValidUsername = value => /^[a-z0-9][a-z0-9._-]{2,39}$/i.test(value);
+    const usernameFromGmail = email => {
+      const base = normalizeGmail(email).split('@')[0].replace(/[^a-z0-9._-]/g, '').slice(0, 40);
+      return base || 'usuario';
+    };
+    function setAuthMode() {
+      const login = authMode === 'login';
+      document.getElementById('authHeading').textContent = login ? 'Entrar na sua conta' : 'Crie sua conta';
+      document.getElementById('authDescription').textContent = login ? 'Use seu Gmail e senha para acessar suas conversas em qualquer dispositivo.' : 'Entre com seu Gmail para criar sua conta e receber a confirmação por e-mail.';
+      document.getElementById('authNameField').style.display = 'grid';
+      document.getElementById('authAccountNameField').style.display = login ? 'none' : 'grid';
+      document.getElementById('authConfirmField').style.display = login ? 'none' : 'grid';
+      document.getElementById('authSubmit').textContent = login ? 'Entrar' : 'Criar conta';
+      document.getElementById('authSwitch').textContent = login ? 'Ainda não tenho conta: criar agora' : 'Já tenho uma conta: entrar';
+    }
+    function showAuthenticatedApp() { document.body.classList.remove('account-first'); document.getElementById('authView').hidden = true; document.getElementById('appView').hidden = false; }
+    function showAuthPage() { document.body.classList.add('account-first'); document.getElementById('authView').hidden = false; document.getElementById('appView').hidden = true; }
+    function showPreviewApp() { document.body.classList.remove('account-first'); document.getElementById('authView').hidden = true; document.getElementById('appView').hidden = false; document.getElementById('homeView').hidden = false; document.getElementById('chatView').hidden = true; }
+    document.getElementById('previewSwitch').addEventListener('click', showPreviewApp);
+    document.getElementById('authSwitch').addEventListener('click', () => { authMode = authMode === 'login' ? 'signup' : 'login'; setAuthMode(); });
+    document.getElementById('googleSignIn').addEventListener('click', async event => {
+      if (!supabaseConfigured) { showToast('Configure o Supabase antes de usar o Google'); return; }
+      const result = await runAuthRequest(event.currentTarget, () => supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin }
+      }));
+      if (result?.error) showToast(formatAuthError(result.error));
+    });
+    document.getElementById('authSubmit').addEventListener('click', async event => {
+      if (!supabaseConfigured) { showToast('Cole a URL e a chave pública do Supabase no index.html'); return; }
+      const email = normalizeGmail(document.getElementById('authUsername').value);
+      const accountName = document.getElementById('authAccountName').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const confirmation = document.getElementById('authConfirmPassword').value;
+      const username = authMode === 'signup' ? normalizeUsername(accountName) : usernameFromGmail(email);
+      if (!isValidGmail(email)) { showToast('Use um Gmail válido, como voce@gmail.com'); return; }
+      if (password.length < 6) { showToast('A senha precisa ter pelo menos 6 caracteres'); return; }
+      if (authMode === 'signup' && !isValidUsername(username)) { showToast('Escolha um nome com 3 a 40 caracteres, usando letras, números, ponto, hífen ou sublinhado'); return; }
+      if (authMode === 'signup' && password !== confirmation) { showToast('As senhas não são iguais'); return; }
+      const result = await runAuthRequest(event.currentTarget, () => authMode === 'signup'
+        ? supabaseClient.auth.signUp({ email, password, options: { data: { name: accountName, username }, emailRedirectTo: window.location.origin } })
+        : supabaseClient.auth.signInWithPassword({ email, password }));
+      if (!result) return;
+      if (result.error) {
+        const message = result.error.message || '';
+        if (/email not confirmed/i.test(message)) { showToast('Confirme seu Gmail primeiro. Enviamos um e-mail para você.'); return; }
+        showToast(formatAuthError(result.error));
+        return;
+      }
+      const user = result.data.user;
+      state.account = { id: user.id, username: user.user_metadata?.username || username, name: user.user_metadata?.name || accountName || username, email: user.email };
+      state.name = state.account.name;
+      save(); render();
+      if (authMode === 'signup' && !result.data.session) {
+        showToast('Conta criada! Confira seu Gmail para confirmar e depois entre.');
+        return;
+      }
+      showAuthenticatedApp();
+      showToast('Login realizado com sucesso');
+    });
+    async function restoreSupabaseSession() {
+      if (!supabaseClient) return;
+      const { data } = await supabaseClient.auth.getSession();
+      if (data.session?.user) {
+        const user = data.session.user;
+        state.account = { id: user.id, name: user.user_metadata?.name || 'Usuário', email: user.email };
+        const username = user.user_metadata?.username || user.user_metadata?.name || user.email?.split('@')[0] || 'Usuário';
+        state.account.username = username;
+        const profile = await supabaseClient.from('profiles').select('username, name, topic, photo').eq('id', user.id).maybeSingle();
+        if (profile.data) { state.account.username = profile.data.username || username; state.name = profile.data.name || state.account.username; state.topic = profile.data.topic || ''; state.profilePhoto = profile.data.photo || state.profilePhoto; document.getElementById('nameInput').value = state.name; document.getElementById('topicInput').value = state.topic; }
+        else state.name = state.account.name;
+        const relations = await supabaseClient.from('friendships').select('friend_id').eq('user_id', user.id);
+        if (relations.data?.length) { const friendIds = relations.data.map(item => item.friend_id); const friends = await supabaseClient.from('user_directory').select('id, username, name, photo').in('id', friendIds); if (friends.data) state.friends = friends.data; }
+        save(); render(); showAuthenticatedApp(); await loadFriendRequests(); await loadRemoteGroups(); await loadRemoteConversation();
+      }
+      supabaseClient.auth.onAuthStateChange((_event, session) => { if (!session) { state.account = null; save(); render(); } });
+    }
+    async function addFriendAccount(friend, friendId = null) {
+      const name = friendName(friend);
+      if (state.friends.some(item => friendName(item).toLowerCase() === name.toLowerCase())) { showToast('Essa pessoa já está na sua lista'); return; }
+      if (supabaseClient && state.account?.id && friendId) {
+        const request = await supabaseClient.from('friend_requests').upsert({ sender_id: state.account.id, receiver_id: friendId, status: 'pending' }, { onConflict: 'sender_id,receiver_id' });
+        if (request.error) { showToast('Não foi possível enviar a solicitação'); return; }
+        showToast('Solicitação de amizade enviada');
+      } else {
+        state.friends.push(friendId ? { id: friendId, username: name } : name);
+        showToast('Amigo adicionado na prévia');
+      }
+      document.getElementById('friendInput').value = '';
+      document.getElementById('friendSuggestions').classList.remove('visible');
+      save(); render();
+    }
+    async function loadFriendRequests() {
+      if (!supabaseClient || !state.account?.id) return;
+      const result = await supabaseClient.from('friend_requests').select('id, sender_id, receiver_id, status').eq('receiver_id', state.account.id).eq('status', 'pending');
+      if (result.error || !result.data?.length) return;
+      const senderIds = result.data.map(request => request.sender_id);
+      const profiles = await supabaseClient.from('user_directory').select('id, username').in('id', senderIds);
+      state.friendRequests = result.data.map(request => ({ ...request, username: profiles.data?.find(profile => profile.id === request.sender_id)?.username || 'Novo amigo' }));
+      save(); render();
+    }
+    async function acceptFriendRequest(requestId) {
+      const request = state.friendRequests.find(item => item.id === requestId);
+      if (!request || !supabaseClient || !state.account?.id) return;
+      await supabaseClient.from('friend_requests').update({ status: 'accepted', updated_at: new Date().toISOString() }).eq('id', requestId);
+      await supabaseClient.from('friendships').upsert([{ user_id: state.account.id, friend_id: request.sender_id }, { user_id: request.sender_id, friend_id: state.account.id }], { onConflict: 'user_id,friend_id' });
+      state.friends.push({ id: request.sender_id, username: request.username });
+      state.friendRequests = state.friendRequests.filter(item => item.id !== requestId);
+      save(); render(); showToast('Amizade aceita');
+    }
+    async function declineFriendRequest(requestId) {
+      const request = state.friendRequests.find(item => item.id === requestId);
+      if (!request) return;
+      if (supabaseClient && state.account?.id) await supabaseClient.from('friend_requests').update({ status: 'declined', updated_at: new Date().toISOString() }).eq('id', requestId);
+      state.friendRequests = state.friendRequests.filter(item => item.id !== requestId);
+      save(); render(); showToast('Solicitação recusada');
+    }
+    async function removeFriend(index) {
+      const friend = state.friends[index];
+      if (!friend) return;
+      if (!confirm(`Remover ${friendName(friend)} da sua lista?`)) return;
+      if (supabaseClient && state.account?.id && friend.id) {
+        await supabaseClient.from('friendships').delete().eq('user_id', state.account.id).eq('friend_id', friend.id);
+      }
+      state.friends.splice(index, 1);
+      save(); render(); showToast('Amigo removido');
+    }
+    async function blockFriend(index) {
+      const friend = state.friends[index];
+      if (!friend) return;
+      if (!confirm(`Bloquear ${friendName(friend)}? Essa pessoa será removida da sua lista.`)) return;
+      if (supabaseClient && state.account?.id && friend.id) {
+        await supabaseClient.from('blocked_users').upsert({ user_id: state.account.id, blocked_id: friend.id }, { onConflict: 'user_id,blocked_id' });
+        await supabaseClient.from('friendships').delete().eq('user_id', state.account.id).eq('friend_id', friend.id);
+      }
+      state.friends.splice(index, 1);
+      save(); render(); showToast('Usuário bloqueado');
+    }
+    let friendSearchTimer = null;
+    let friendSearchRequest = 0;
+    document.getElementById('friendInput').addEventListener('input', event => {
+      clearTimeout(friendSearchTimer);
+      const term = event.target.value.trim();
+      const suggestions = document.getElementById('friendSuggestions');
+      if (!term) { suggestions.innerHTML = ''; suggestions.classList.remove('visible'); return; }
+      const localGroups = state.groups.filter(group => group.name.toLowerCase().includes(term.toLowerCase()));
+      if (!supabaseClient || !state.account?.id) {
+        suggestions.innerHTML = localGroups.length ? localGroups.map(group => `<button class="friend-suggestion" type="button" data-group-search-id="${group.id || ''}"><span class="friend-avatar">♧</span><span><strong>${escapeHtml(group.name)}</strong><small>Grupo salvo nesta conta</small></span></button>`).join('') : '<small style="padding:7px;color:var(--muted)">Entre na sua conta para pesquisar pessoas.</small>';
+        suggestions.classList.add('visible');
+        return;
+      }
+
+      const requestId = ++friendSearchRequest;
+      friendSearchTimer = setTimeout(async () => {
+        const searchTerm = term.includes('@gmail.com') ? term.split('@')[0] : term;
+        const safeTerm = searchTerm.replace(/[%_]/g, char => `\\${char}`);
+        const { data, error } = await supabaseClient.from('user_directory')
+          .select('id, username, name')
+          .or(`username.ilike.${safeTerm}%,name.ilike.${safeTerm}%`)
+          .neq('id', state.account.id)
+          .limit(8);
+
+        // Ignora respostas antigas caso o usuário tenha continuado digitando.
+        if (requestId !== friendSearchRequest) return;
+        const groupResults = localGroups.map(group => `<button class="friend-suggestion" type="button" data-group-search-id="${group.id || ''}"><span class="friend-avatar">♧</span><span><strong>${escapeHtml(group.name)}</strong><small>Grupo</small></span></button>`).join('');
+        if (error || !data?.length) {
+          suggestions.innerHTML = groupResults || '<small style="padding:7px;color:var(--muted)">Nenhum amigo ou grupo encontrado.</small>';
+          suggestions.classList.add('visible');
+          return;
+        }
+        suggestions.innerHTML = data.map(friend => `<button class="friend-suggestion" type="button" data-suggestion-id="${friend.id}" data-suggestion-name="${escapeHtml(friend.username)}"><span class="friend-avatar">${escapeHtml(friend.username.slice(0, 1).toUpperCase())}</span><span><strong>${escapeHtml(friend.username)}</strong><small>${escapeHtml(friend.name || 'Usuário')}</small></span></button>`).join('') + groupResults;
+        suggestions.classList.add('visible');
+      }, 400);
+    });
+    document.getElementById('friendSuggestions').addEventListener('click', async event => {
+      const suggestion = event.target.closest('[data-suggestion-id]');
+      if (suggestion) { addFriendAccount(suggestion.dataset.suggestionName, suggestion.dataset.suggestionId); return; }
+      const requestButton = event.target.closest('[data-accept-request]');
+      if (requestButton) { await acceptFriendRequest(requestButton.dataset.acceptRequest); return; }
+      const declineButton = event.target.closest('[data-decline-request]');
+      if (declineButton) { await declineFriendRequest(declineButton.dataset.declineRequest); return; }
+      const groupButton = event.target.closest('[data-group-search-id]');
+      const group = state.groups.find(item => String(item.id) === groupButton?.dataset.groupSearchId);
+      if (group) { state.group = group; group.unread = 0; save(); document.getElementById('friendInput').value = ''; document.getElementById('friendSuggestions').classList.remove('visible'); document.getElementById('homeView').hidden = true; document.getElementById('chatView').hidden = false; if (group.id && !String(group.id).startsWith('local-')) await loadRemoteConversation(group.id); else render(); }
+    });
+    document.getElementById('friendList').addEventListener('click', async event => {
+      const removeButton = event.target.closest('[data-remove-friend]');
+      if (removeButton) { await removeFriend(Number(removeButton.dataset.removeFriend)); return; }
+      const blockButton = event.target.closest('[data-block-friend]');
+      if (blockButton) await blockFriend(Number(blockButton.dataset.blockFriend));
+    });
+    document.getElementById('groupList').addEventListener('click', async event => {
+      const row = event.target.closest('[data-group-index]');
+      const group = row ? state.groups[Number(row.dataset.groupIndex)] : null;
+      if (!group) return;
+      state.group = group;
+      group.unread = 0;
+      save();
+      document.getElementById('homeView').hidden = true;
+      document.getElementById('chatView').hidden = false;
+      if (group.id && !String(group.id).startsWith('local-')) await loadRemoteConversation(group.id);
+      else render();
+    });
+    document.getElementById('mobileBack').addEventListener('click', () => { document.getElementById('chatView').hidden = true; document.getElementById('homeView').hidden = false; render(); });
+    let pendingGroupPeople = [];
+    document.getElementById('newChat')?.addEventListener('click', () => { state.group = null; state.messages = [{ id: Date.now(), author: 'bot', text: 'Nova conversa iniciada. Crie um grupo para conversar com seus amigos.', time: now() }]; save(); render(); showToast('Nova conversa criada'); });
+    const groupModal = document.getElementById('groupModal');
+    function openGroupCreation() { groupModal.hidden = false; document.getElementById('groupNameInput').focus(); }
+    document.getElementById('createGroupButton')?.addEventListener('click', openGroupCreation);
+    document.getElementById('cancelGroup').addEventListener('click', () => { groupModal.hidden = true; });
+    async function createGroupAndOpen(name, people = []) {
+      let remoteGroup = null;
+      try {
+        remoteGroup = await createRemoteGroup(name);
+        const invitedPeople = people.filter(person => person && typeof person === 'object' && person.id);
+        if (remoteGroup?.id && invitedPeople.length) {
+          const membership = await supabaseClient.from('group_members').upsert(invitedPeople.map(person => ({ group_id: remoteGroup.id, user_id: person.id })), { onConflict: 'group_id,user_id' });
+          if (membership.error) throw membership.error;
+        }
+      } catch (error) {
+        showToast('Não foi possível salvar o grupo no banco');
+        return;
+      }
+      const peopleNames = people.map(person => friendName(person));
+      const memberIds = [state.account?.id, ...people.filter(person => person && typeof person === 'object' && person.id).map(person => person.id)].filter(Boolean);
+      state.group = { id: remoteGroup?.id || null, name, people: peopleNames, memberIds, description: '', photo: '', aiEnabled: state.aiEnabled };
+      const groupId = remoteGroup?.id || `local-${Date.now()}`;
+      state.group.id = groupId;
+      state.groups = [{ id: groupId, name, people: peopleNames, lastText: `Grupo "${name}" criado`, lastTime: now() }, ...state.groups.filter(item => item.name !== name)];
+      if (state.group.id) subscribeToGroup(state.group.id);
+      pendingGroupPeople = [];
+      const groupMessage = { id: Date.now(), author: 'bot', text: `Grupo "${name}" criado. Convide seus amigos pelo botão ＋ Convidar. A IA só responde quando alguém usar /analisar.`, time: now() };
+      state.messages = [groupMessage];
+      await saveRemoteAiMessage(groupMessage);
+      save();
+      render();
+      groupModal.hidden = true;
+      document.getElementById('homeView').hidden = true;
+      document.getElementById('chatView').hidden = false;
+      input.focus();
+      showToast('Grupo criado com sucesso');
+    }
+    document.getElementById('createGroup').addEventListener('click', () => { const name = document.getElementById('groupNameInput').value.trim(); if (!name) { showToast('Informe o nome do grupo'); return; } createGroupAndOpen(name, pendingGroupPeople); });
+    document.getElementById('startChat').addEventListener('click', () => createGroupAndOpen('Novo grupo'));
+    const inviteModal = document.getElementById('inviteModal');
+    function renderInviteList() { const inviteList = document.getElementById('inviteList'); const available = state.friends.filter(friend => !state.group?.people.includes(friendName(friend))); inviteList.innerHTML = available.length ? available.map((friend, index) => `<label class="invite-person"><span class="friend-avatar">${escapeHtml(friendName(friend).slice(0, 1).toUpperCase())}</span><span>${escapeHtml(friendName(friend))}</span><input type="checkbox" data-invite-index="${state.friends.indexOf(friend)}" aria-label="Convidar ${escapeHtml(friendName(friend))}"></label>`).join('') : '<small style="color:var(--muted)">Adicione amigos primeiro para convidá-los.</small>'; }
+    document.getElementById('inviteFriendsButton').addEventListener('click', () => { if (!state.group) { showToast('Crie um grupo primeiro'); return; } renderInviteList(); inviteModal.hidden = false; });
+    document.getElementById('closeInvite').addEventListener('click', () => { inviteModal.hidden = true; });
+    document.getElementById('confirmInvite').addEventListener('click', async () => { const selected = [...document.querySelectorAll('[data-invite-index]:checked')].map(item => state.friends[Number(item.dataset.inviteIndex)]); const invited = selected.map(friendName); if (!invited.length) { showToast('Selecione pelo menos um amigo'); return; } if (supabaseClient && state.group?.id) { const rows = selected.filter(friend => friend.id).map(friend => ({ group_id: state.group.id, user_id: friend.id })); if (rows.length) await supabaseClient.from('group_members').upsert(rows, { onConflict: 'group_id,user_id' }); } state.group.people.push(...invited); state.group.memberIds ||= []; state.group.memberIds.push(...selected.filter(friend => friend.id).map(friend => friend.id)); const inviteMessage = { id: Date.now(), author: 'bot', text: `${invited.join(', ')} entrou${invited.length > 1 ? 'ram' : ''} no grupo.`, time: now() }; state.messages.push(inviteMessage); updateGroupSummary(inviteMessage); await saveRemoteAiMessage(inviteMessage); save(); render(); inviteModal.hidden = true; showToast('Amigos convidados'); });
+    const groupInfoModal = document.getElementById('groupInfoModal');
+    document.getElementById('groupInfoButton').addEventListener('click', () => { if (!state.group) { showToast('Crie um grupo primeiro'); return; } document.getElementById('groupTitleInput').value = state.group.name; document.getElementById('groupDescriptionInput').value = state.group.description || ''; const preview = document.getElementById('groupPhotoPreview'); preview.innerHTML = state.group.photo ? `<img src="${state.group.photo}" alt="Foto do grupo">` : '♙'; groupInfoModal.hidden = false; });
+    document.getElementById('closeGroupInfo').addEventListener('click', () => { groupInfoModal.hidden = true; });
+    document.getElementById('cancelGroupInfo').addEventListener('click', () => { groupInfoModal.hidden = true; });
+    document.getElementById('groupPhotoInput').addEventListener('change', event => { const file = event.target.files[0]; if (!file) return; if (file.size > 2 * 1024 * 1024) { showToast('Escolha uma imagem de até 2 MB'); return; } uploadMedia(file, 'group').then(url => { if (url) { document.getElementById('groupPhotoPreview').innerHTML = `<img src="${url}" alt="Foto do grupo">`; document.getElementById('groupPhotoPreview').dataset.photo = url; showToast('Imagem enviada para o banco'); return; } const reader = new FileReader(); reader.onload = () => { document.getElementById('groupPhotoPreview').innerHTML = `<img src="${reader.result}" alt="Foto do grupo">`; document.getElementById('groupPhotoPreview').dataset.photo = reader.result; }; reader.readAsDataURL(file); }); });
+    document.getElementById('saveGroupInfo').addEventListener('click', async () => { if (!state.group) return; state.group.name = document.getElementById('groupTitleInput').value.trim() || state.group.name; state.group.description = document.getElementById('groupDescriptionInput').value.trim(); state.group.photo = document.getElementById('groupPhotoPreview').dataset.photo || state.group.photo || ''; if (supabaseClient && state.group.id) await supabaseClient.from('groups').update({ name: state.group.name, description: state.group.description, photo: state.group.photo }).eq('id', state.group.id); save(); render(); groupInfoModal.hidden = true; showToast('Informações do grupo atualizadas'); });
+    document.getElementById('leaveGroupButton').addEventListener('click', async () => {
+      if (!state.group) return;
+      if (!confirm(`Sair do grupo "${state.group.name}"?`)) return;
+      if (supabaseClient && state.account?.id && state.group.id && !String(state.group.id).startsWith('local-')) {
+        const result = await supabaseClient.from('group_members').delete().eq('group_id', state.group.id).eq('user_id', state.account.id);
+        if (result.error) { showToast('Não foi possível sair do grupo'); return; }
+      }
+      state.groups = state.groups.filter(group => group.id !== state.group.id);
+      state.group = null;
+      state.messages = [];
+      save();
+      groupInfoModal.hidden = true;
+      document.getElementById('chatView').hidden = true;
+      document.getElementById('homeView').hidden = false;
+      render();
+      showToast('Você saiu do grupo');
+    });
+    document.querySelectorAll('[data-chat]').forEach(item => item.addEventListener('click', () => { document.querySelectorAll('.chat-item').forEach(chat => chat.classList.remove('active')); item.classList.add('active'); if (item.dataset.chat === 'journal') showToast('O diário pessoal estará disponível em breve'); }));
+    document.getElementById('nameInput').value = state.name; document.getElementById('topicInput').value = state.topic; updateAccountMode(); setAuthMode(); render(); restoreSupabaseSession();
+  </script>
+</body>
+</html>
