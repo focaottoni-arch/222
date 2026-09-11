@@ -949,14 +949,28 @@
       // Compatibilidade com bancos em que a RPC ainda não foi atualizada no
       // schema cache. O SQL do projeto também libera somente os campos
       // públicos necessários para esta busca.
+      const safe = clean.replace(/[,%()]/g, '');
       const fallback = await supabaseClient
         .from('profiles')
         .select('id, username, name')
-        .or(`username.ilike.%${clean.replace(/[,%()]/g, '')}%,name.ilike.%${clean.replace(/[,%()]/g, '')}%`)
+        .or(`username.ilike.%${safe}%,name.ilike.%${safe}%`)
         .limit(20);
       if (!fallback.error) return { data: fallback.data || [], error: null, fallback: true };
 
-      return { data: [], error: rpc.error, fallbackError: fallback.error };
+      // Última rota: busca server-side pela Netlify, sem expor a service role no navegador.
+      try {
+        const response = await fetch('/.netlify/functions/search-users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ search: clean })
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (response.ok && Array.isArray(payload.users)) return { data: payload.users, error: null, serverFallback: true };
+      } catch (serverError) {
+        console.error('Busca server-side indisponível:', serverError);
+      }
+
+      return { data: [], error: rpc.error || fallback.error, fallbackError: fallback.error };
     }
 
     async function sendFriendRequest(friend, friendId = null) {

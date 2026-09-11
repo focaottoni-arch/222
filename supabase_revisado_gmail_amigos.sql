@@ -11,6 +11,7 @@ drop function if exists public.send_friend_request(uuid);
 drop function if exists public.respond_friend_request(uuid, boolean);
 drop function if exists public.create_group_with_members(text, uuid[]);
 drop function if exists public.add_group_members(uuid, uuid[]);
+drop function if exists public.search_user_directory(text);
 
 -- =========================
 -- PERFIS
@@ -31,6 +32,32 @@ alter table public.profiles add column if not exists topic text;
 alter table public.profiles add column if not exists photo text default '';
 alter table public.profiles add column if not exists created_at timestamptz not null default now();
 alter table public.profiles add column if not exists updated_at timestamptz not null default now();
+-- Corrige colisões antigas de username sem apagar nenhuma conta.
+do $$
+declare
+  r record;
+  candidate text;
+  suffix text;
+  n integer;
+begin
+  for r in
+    select id, username, row_number() over (partition by lower(username) order by created_at, id) as rn
+    from public.profiles
+    where username is not null and trim(username) <> ''
+  loop
+    if r.rn > 1 then
+      suffix := '_' || substr(replace(r.id::text, '-', ''), 1, 8);
+      candidate := left(regexp_replace(lower(trim(r.username)), '[^a-z0-9._-]', '', 'g'), greatest(1, 40 - length(suffix))) || suffix;
+      n := 0;
+      while exists (select 1 from public.profiles p where lower(p.username) = lower(candidate) and p.id <> r.id) loop
+        n := n + 1;
+        candidate := left(regexp_replace(lower(trim(r.username)), '[^a-z0-9._-]', '', 'g'), greatest(1, 40 - length(suffix) - length(n::text) - 1)) || suffix || '_' || n;
+      end loop;
+      update public.profiles set username = candidate, updated_at = now() where id = r.id;
+    end if;
+  end loop;
+end $$;
+
 create unique index if not exists profiles_username_key on public.profiles (lower(username));
 create index if not exists profiles_name_idx on public.profiles (lower(name));
 alter table public.profiles enable row level security;
