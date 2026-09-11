@@ -44,10 +44,53 @@ create policy "Users can update own profile" on public.profiles for update to au
 
 -- Diretório seguro para busca: somente identificadores públicos do perfil.
 drop view if exists public.user_directory;
-create view public.user_directory as
+-- O diretório contém somente dados públicos do perfil.
+-- SECURITY INVOKER fica desativado para que a RLS de profiles (que protege
+-- cada perfil para leitura direta) não impeça a busca de outras pessoas.
+create view public.user_directory
+with (security_invoker = false)
+as
 select id, username, name
 from public.profiles;
 grant select on public.user_directory to authenticated;
+
+-- Corrige contas antigas que foram criadas antes do trigger de perfil.
+-- Não cria contas novas: apenas cria o perfil que estiver faltando para
+-- cada auth.users existente. O UUID do Auth continua sendo o ID oficial.
+do $$
+declare
+  u record;
+  base_username text;
+  candidate text;
+  suffix text;
+  n integer;
+begin
+  for u in select id, email, raw_user_meta_data from auth.users loop
+    if not exists (select 1 from public.profiles where id = u.id) then
+      base_username := lower(coalesce(
+        u.raw_user_meta_data->>'username',
+        u.raw_user_meta_data->>'name',
+        split_part(coalesce(u.email, ''), '@', 1),
+        'usuario'
+      ));
+      base_username := regexp_replace(base_username, '[^a-z0-9._-]', '', 'g');
+      base_username := left(base_username, 40);
+      if base_username = '' then base_username := 'usuario'; end if;
+      candidate := base_username;
+      suffix := '_' || substr(replace(u.id::text, '-', ''), 1, 8);
+      n := 0;
+      while exists (select 1 from public.profiles where lower(username) = lower(candidate)) loop
+        n := n + 1;
+        candidate := left(base_username, greatest(1, 40 - length(suffix))) || suffix;
+        if n > 1 then
+          suffix := '_' || substr(replace(u.id::text, '-', ''), 1, 8) || '_' || substr(md5(random()::text), 1, 4);
+        end if;
+      end loop;
+      insert into public.profiles (id, username, name)
+      values (u.id, candidate, coalesce(u.raw_user_meta_data->>'name', candidate));
+    end if;
+  end loop;
+end $$;
 
 -- Perfil automático no cadastro. O loop evita colisão de username entre contas.
 create or replace function public.handle_new_user_profile()
@@ -318,3 +361,7 @@ begin
   if not exists (select 1 from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename='friendships') then alter publication supabase_realtime add table public.friendships; end if;
 exception when undefined_object then null;
 end $$;
+
+
+-- Atualiza imediatamente o schema cache do PostgREST/Supabase.
+notify pgrst, 'reload schema';

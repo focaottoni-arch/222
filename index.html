@@ -599,9 +599,30 @@
         group_name: name,
         member_ids: uniqueIds
       });
-      if (error) throw error;
-      if (!data?.id) throw new Error('O Supabase não retornou o grupo criado.');
-      return data;
+      if (!error && data?.id) return data;
+
+      // Compatibilidade: se o PostgREST ainda estiver com o schema cache antigo
+      // e não enxergar a RPC, usamos as tabelas já existentes com as policies
+      // atuais. Isso evita que uma conta fique sem conseguir criar grupo.
+      const rpcMissing = error && (error.code === 'PGRST202' || /Could not find the function.*create_group_with_members|schema cache/i.test(error.message || ''));
+      if (!rpcMissing) throw error || new Error('O Supabase não retornou o grupo criado.');
+
+      const { data: directGroup, error: groupError } = await supabaseClient
+        .from('groups')
+        .insert({ owner_id: currentUser.id, name: String(name).trim() })
+        .select('*')
+        .single();
+      if (groupError) throw new Error('O banco ainda não está atualizado para criar grupos. Execute o SQL completo do projeto no Supabase.');
+
+      const allMemberIds = [...new Set([currentUser.id, ...uniqueIds])];
+      const rows = allMemberIds.map(id => ({
+        group_id: directGroup.id,
+        user_id: id,
+        role: id === currentUser.id ? 'admin' : 'member'
+      }));
+      const { error: memberError } = await supabaseClient.from('group_members').insert(rows);
+      if (memberError) throw new Error('O grupo foi criado, mas não foi possível adicionar os participantes. Atualize o SQL do Supabase e tente novamente.');
+      return directGroup;
     }
     async function saveRemoteMessage(message) {
       if (!supabaseClient || !state.account?.id || !state.group?.id || message.author !== 'user') return;
@@ -839,10 +860,11 @@
     });
     let friendRequestChannel = null;
     async function loadFriendRequests() {
-      if (!supabaseClient || !state.account?.id) { state.friendRequests = []; renderNotifications([]); return; }
+      const authUser = await getAuthenticatedUser();
+      if (!supabaseClient || !authUser) { state.friendRequests = []; renderNotifications([]); return; }
       const { data, error } = await supabaseClient.from('friend_requests')
         .select('id, sender_id, created_at')
-        .eq('receiver_id', state.account.id)
+        .eq('receiver_id', authUser.id)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
       if (error) { console.error('Erro ao carregar solicitações:', error); return; }
@@ -867,8 +889,9 @@
         .subscribe();
     }
     async function loadFriends() {
-      if (!supabaseClient || !state.account?.id) { state.friends = []; return; }
-      const { data: relations, error } = await supabaseClient.from('friendships').select('friend_id').eq('user_id', state.account.id);
+      const authUser = await getAuthenticatedUser();
+      if (!supabaseClient || !authUser) { state.friends = []; return; }
+      const { data: relations, error } = await supabaseClient.from('friendships').select('friend_id').eq('user_id', authUser.id);
       if (error) { console.error('Erro ao carregar amizades:', error); return; }
       const ids = (relations || []).map(item => item.friend_id);
       if (!ids.length) { state.friends = []; return; }
@@ -905,8 +928,18 @@
         }
       });
     }
+    async function getAuthenticatedUser() {
+      if (!supabaseClient) return null;
+      const { data, error } = await supabaseClient.auth.getUser();
+      if (error || !data?.user) return null;
+      if (state.account?.id !== data.user.id) {
+        state.account = { ...(state.account || {}), id: data.user.id, email: data.user.email || state.account?.email };
+      }
+      return data.user;
+    }
     async function sendFriendRequest(friend, friendId = null) {
-      if (!supabaseClient || !state.account?.id) { showToast('Entre na sua conta para adicionar amigos'); return; }
+      const authUser = await getAuthenticatedUser();
+      if (!supabaseClient || !authUser) { showToast('Entre na sua conta para adicionar amigos'); return; }
       let targetId = friendId;
       if (!targetId) {
         const term = friendName(friend).trim();
@@ -947,13 +980,24 @@
       const requestId = ++friendSearchRequest;
       friendSearchTimer = setTimeout(async () => {
         const searchTerm = term.includes('@gmail.com') ? term.split('@')[0] : term;
-        const { data, error } = await supabaseClient.rpc('search_user_directory', { search_term: searchTerm });
-        if (requestId !== friendSearchRequest) return;
-        if (error || !data?.length) {
-          suggestions.innerHTML = '<small style="padding:7px;color:var(--muted)">Nenhuma conta encontrada.</small>';
+        const authUser = await getAuthenticatedUser();
+        if (!authUser) {
+          suggestions.innerHTML = '<small style="padding:7px;color:var(--muted)">Entre na sua conta para buscar pessoas.</small>';
           suggestions.classList.add('visible'); return;
         }
-        suggestions.innerHTML = data.filter(friend => friend.id !== state.account.id).slice(0, 8).map(friend => `<button class="friend-suggestion" type="button" data-suggestion-id="${friend.id}" data-suggestion-name="${escapeHtml(friend.username)}"><span class="friend-avatar">${escapeHtml((friend.username || friend.name || 'U').slice(0,1).toUpperCase())}</span><span><strong>${escapeHtml(friend.username)}</strong><small>${escapeHtml(friend.name || 'Usuário')}</small></span></button>`).join('');
+        const { data, error } = await supabaseClient.rpc('search_user_directory', { search_term: searchTerm });
+        if (requestId !== friendSearchRequest) return;
+        if (error) {
+          console.error('Erro na busca de usuários:', error);
+          suggestions.innerHTML = '<small style="padding:7px;color:var(--muted)">Erro ao buscar contas. Verifique o SQL do Supabase.</small>';
+          suggestions.classList.add('visible'); return;
+        }
+        const otherUsers = (data || []).filter(friend => friend.id !== authUser.id).slice(0, 8);
+        if (!otherUsers.length) {
+          suggestions.innerHTML = '<small style="padding:7px;color:var(--muted)">Nenhuma outra conta encontrada.</small>';
+          suggestions.classList.add('visible'); return;
+        }
+        suggestions.innerHTML = otherUsers.map(friend => `<button class="friend-suggestion" type="button" data-suggestion-id="${friend.id}" data-suggestion-name="${escapeHtml(friend.username)}"><span class="friend-avatar">${escapeHtml((friend.username || friend.name || 'U').slice(0,1).toUpperCase())}</span><span><strong>${escapeHtml(friend.username)}</strong><small>${escapeHtml(friend.name || 'Usuário')}</small></span></button>`).join('');
         suggestions.classList.add('visible');
       }, 300);
     });
@@ -1001,7 +1045,14 @@
       const memberIds = selectedPeople.map(person => typeof person === 'string' ? null : person?.id).filter(Boolean);
       let remoteGroup;
       try { remoteGroup = await createRemoteGroup(name, memberIds); }
-      catch (error) { console.error('Erro ao criar grupo:', error); showToast(error?.message || 'Não foi possível salvar o grupo no banco'); return; }
+      catch (error) {
+        console.error('Erro ao criar grupo:', error);
+        const message = error?.message || '';
+        showToast(message.includes('schema cache') || message.includes('create_group_with_members')
+          ? 'O Supabase ainda não atualizou a função de grupos. Execute o SQL completo.'
+          : (message || 'Não foi possível salvar o grupo no banco'));
+        return;
+      }
       const peopleNames = selectedPeople.map(friendName).filter(Boolean);
       state.group = { id: remoteGroup.id, name: remoteGroup.name || name, people: peopleNames, memberIds: [state.account.id, ...memberIds], description: remoteGroup.description || '', photo: remoteGroup.photo || '', aiEnabled: remoteGroup.ai_enabled ?? state.aiEnabled };
       pendingGroupPeople = [];
