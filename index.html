@@ -383,7 +383,7 @@
 
     <main class="main">
       <section class="auth-view" id="authView">
-        <div class="auth-card"><div class="auth-logo"><span>♧</span>Ottoni</div><h1 id="authHeading">Crie sua conta</h1><p id="authDescription">Entre em um espaço seguro para conversar, criar grupos e cuidar da sua mente.</p><div class="profile-field" id="authNameField"><label>Gmail</label><input id="authUsername" type="email" autocomplete="email" placeholder="seuemail@gmail.com"></div><div class="profile-field"><label>Senha</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="Mínimo de 6 caracteres"></div><div class="profile-field" id="authConfirmField"><label>Confirmar senha</label><input id="authConfirmPassword" type="password" autocomplete="new-password" placeholder="Digite a senha novamente"></div><button class="auth-submit" id="authSubmit" type="button">Criar conta</button><button class="auth-switch" id="authSwitch" type="button">Já tenho uma conta: entrar</button><button class="preview-switch" id="previewSwitch" type="button">→ Ver segunda área (prévia)</button><p class="auth-disclaimer">Seus dados de conta serão protegidos pelo Supabase.</p></div>
+        <div class="auth-card"><div class="auth-logo"><span>♧</span>Ottoni</div><h1 id="authHeading">Crie sua conta</h1><p id="authDescription">Entre em um espaço seguro para conversar, criar grupos e cuidar da sua mente.</p><div class="profile-field"><label id="authIdentifierLabel">Gmail ou nome de usuário</label><input id="authUsername" type="text" autocomplete="username" placeholder="seuemail@gmail.com ou seu_username"></div><div class="profile-field" id="authChooseUsernameField" hidden><label>Nome de usuário</label><input id="authChosenUsername" type="text" autocomplete="username" placeholder="seu_username"></div><div class="profile-field"><label>Senha</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="Mínimo de 6 caracteres"></div><div class="profile-field" id="authConfirmField"><label>Confirmar senha</label><input id="authConfirmPassword" type="password" autocomplete="new-password" placeholder="Digite a senha novamente"></div><button class="auth-submit" id="authSubmit" type="button">Criar conta</button><button class="auth-switch" id="authSwitch" type="button">Já tenho uma conta: entrar</button><button class="preview-switch" id="previewSwitch" type="button">→ Ver segunda área (prévia)</button><p class="auth-disclaimer">Seus dados de conta serão protegidos pelo Supabase.</p></div>
       </section>
       <div class="app-view" id="appView" hidden>
       <section class="home-view" id="homeView">
@@ -589,8 +589,12 @@
       finally { authRequestInFlight = false; button.disabled = false; button.textContent = originalText; }
     }
     async function createRemoteGroup(name, memberIds = []) {
-      if (!supabaseClient || !state.account?.id) throw new Error('Usuário não autenticado.');
-      const uniqueIds = [...new Set(memberIds.filter(id => id && id !== state.account.id))];
+      if (!supabaseClient) throw new Error('Supabase não configurado.');
+      const { data: authData, error: authError } = await supabaseClient.auth.getUser();
+      const currentUser = authData?.user;
+      if (authError || !currentUser?.id) throw new Error('Sua sessão expirou. Entre novamente na conta.');
+      state.account = { ...(state.account || {}), id: currentUser.id, email: currentUser.email || state.account?.email };
+      const uniqueIds = [...new Set(memberIds.filter(id => id && id !== currentUser.id))];
       const { data, error } = await supabaseClient.rpc('create_group_with_members', {
         group_name: name,
         member_ids: uniqueIds
@@ -775,8 +779,11 @@
     function setAuthMode() {
       const login = authMode === 'login';
       document.getElementById('authHeading').textContent = login ? 'Entrar na sua conta' : 'Crie sua conta';
-      document.getElementById('authDescription').textContent = login ? 'Use seu Gmail e senha para acessar suas conversas em qualquer dispositivo.' : 'Entre com seu Gmail para criar sua conta e receber a confirmação por e-mail.';
-      document.getElementById('authNameField').style.display = 'grid';
+      document.getElementById('authDescription').textContent = login ? 'Entre usando seu Gmail ou nome de usuário e senha.' : 'Entre com seu Gmail, escolha um nome de usuário e confirme sua conta por e-mail.';
+      document.getElementById('authIdentifierLabel').textContent = login ? 'Gmail ou nome de usuário' : 'Gmail';
+      document.getElementById('authUsername').placeholder = login ? 'seuemail@gmail.com ou seu_username' : 'seuemail@gmail.com';
+      document.getElementById('authUsername').type = login ? 'text' : 'email';
+      document.getElementById('authChooseUsernameField').hidden = login;
       document.getElementById('authConfirmField').style.display = login ? 'none' : 'grid';
       document.getElementById('authSubmit').textContent = login ? 'Entrar' : 'Criar conta';
       document.getElementById('authSwitch').textContent = login ? 'Ainda não tenho conta: criar agora' : 'Já tenho uma conta: entrar';
@@ -788,16 +795,29 @@
     document.getElementById('authSwitch').addEventListener('click', () => { authMode = authMode === 'login' ? 'signup' : 'login'; setAuthMode(); });
     document.getElementById('authSubmit').addEventListener('click', async event => {
       if (!supabaseConfigured) { showToast('Cole a URL e a chave pública do Supabase no index.html'); return; }
-      const email = normalizeGmail(document.getElementById('authUsername').value);
+      const identifier = document.getElementById('authUsername').value.trim();
+      const chosenUsername = document.getElementById('authChosenUsername').value.trim();
       const password = document.getElementById('authPassword').value;
       const confirmation = document.getElementById('authConfirmPassword').value;
-      const username = usernameFromGmail(email);
-      if (!isValidGmail(email)) { showToast('Use um Gmail válido, como voce@gmail.com'); return; }
+      let email = normalizeGmail(identifier);
+      const username = authMode === 'signup' ? chosenUsername : identifier;
+      if (authMode === 'signup' && !isValidGmail(email)) { showToast('Use um Gmail válido, como voce@gmail.com'); return; }
+      if (authMode === 'signup' && !/^[a-zA-Z0-9._-]{3,40}$/.test(chosenUsername)) { showToast('Escolha um nome de usuário com 3 a 40 caracteres, usando letras, números, ponto, _ ou -.'); return; }
       if (password.length < 6) { showToast('A senha precisa ter pelo menos 6 caracteres'); return; }
       if (authMode === 'signup' && password !== confirmation) { showToast('As senhas não são iguais'); return; }
-      const result = await runAuthRequest(event.currentTarget, () => authMode === 'signup'
-        ? supabaseClient.auth.signUp({ email, password, options: { data: { name: username, username } } })
-        : supabaseClient.auth.signInWithPassword({ email, password }));
+      const result = await runAuthRequest(event.currentTarget, async () => {
+        if (authMode === 'signup') {
+          return await supabaseClient.auth.signUp({ email, password, options: { data: { name: chosenUsername, username: chosenUsername } } });
+        }
+        if (isValidGmail(identifier)) {
+          return await supabaseClient.auth.signInWithPassword({ email, password });
+        }
+        const response = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: identifier }) });
+        const lookup = await response.json().catch(() => ({}));
+        if (!response.ok || !lookup.email) return { error: { message: lookup.error || 'Nome de usuário não encontrado.' } };
+        email = lookup.email;
+        return await supabaseClient.auth.signInWithPassword({ email, password });
+      });
       if (!result) return;
       if (result.error) {
         const message = result.error.message || '';
@@ -806,7 +826,7 @@
         return;
       }
       const user = result.data.user;
-      state.account = { id: user.id, username: user.user_metadata?.username || username, name: user.user_metadata?.name || username, email: user.email };
+      state.account = { id: user.id, username: user.user_metadata?.username || usernameFromGmail(user.email || '') , name: user.user_metadata?.name || user.user_metadata?.username || usernameFromGmail(user.email || ''), email: user.email };
       state.name = state.account.name;
       if (result.data.session) { await loadFriends(); await loadFriendRequests(); subscribeFriendRequests(); }
       save(); render();
