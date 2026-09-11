@@ -5,8 +5,13 @@
 - Login usando o mesmo Gmail e senha.
 - Mensagem clara quando o e-mail ainda não foi confirmado.
 - Perfil criado automaticamente no Supabase quando uma conta é criada.
-- Usuários cadastrados aparecem na busca de **Adicionar amigo**.
-- Busca de amigos por nome/usuário e também aceitando o Gmail como atalho para o nome de usuário.
+- Busca de usuários reais por nome/username.
+- Solicitações de amizade reais no Supabase, sem adicionar amizade automaticamente.
+- Caixa de notificações com aceitar/recusar.
+- Amizade criada nos dois sentidos ao aceitar.
+- Criação de grupos em transação, com criador como administrador e membro.
+- Convite de amigos para grupos.
+- Edição de nome, username e foto do perfil.
 - IA continua em `POST /api/analisar`, executada por uma Netlify Function.
 - A chave da OpenAI fica somente em variável de ambiente.
 - Layout/CSS do site original preservado.
@@ -59,17 +64,3 @@ Se o Supabase estiver com o limite de cadastro temporariamente atingido, o arqui
 
 ## 5) Segurança
 Nunca coloque `OPENAI_API_KEY` dentro do `index.html`. Ela deve ficar apenas nas variáveis de ambiente da Netlify.
-
-## Correções de banco e amigos/grupos
-
-O arquivo `supabase_revisado_gmail_amigos.sql` foi atualizado para:
-- pesquisar usuários reais por username/nome via RPC;
-- enviar, aceitar e recusar solicitações de amizade;
-- criar as duas relações de amizade ao aceitar;
-- criar grupos de forma atômica usando o usuário autenticado;
-- adicionar automaticamente o criador como membro;
-- adicionar membros reais ao grupo;
-- manter mensagens e Realtime.
-
-Depois de substituir os arquivos no mesmo repositório, execute **o arquivo SQL inteiro** no SQL Editor do mesmo projeto Supabase.
-

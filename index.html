@@ -39,21 +39,20 @@
     .section-label { margin: 0 12px 9px; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; }
     .new-chat { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px; margin-bottom: 14px; border: 0; border-radius: 9px; background: var(--coral); color: #fff; font-size: 12px; font-weight: 700; }
     .group-chat { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; margin: -7px 0 14px; border: 1px solid var(--line); border-radius: 9px; background: transparent; color: var(--ink); font-size: 11px; font-weight: 700; }
+    .notification-button { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 9px; margin: -6px 0 12px; border: 1px solid var(--line); border-radius: 9px; background: transparent; color: var(--ink); font-size: 10px; font-weight: 700; position: relative; }
+    .notification-count { min-width: 18px; height: 18px; padding: 0 5px; display: inline-grid; place-items: center; border-radius: 999px; background: var(--coral); color: #fff; font-size: 9px; }
+    .notification-list { display: grid; gap: 8px; max-height: 330px; overflow-y: auto; }
+    .notification-row { display: grid; grid-template-columns: 34px 1fr; gap: 9px; align-items: center; padding: 9px; border: 1px solid var(--line); border-radius: 9px; }
+    .notification-actions { display: flex; gap: 6px; margin-top: 7px; }
+    .notification-actions button { flex: 1; padding: 7px; border: 0; border-radius: 7px; font-size: 10px; font-weight: 700; cursor: pointer; }
+    .notification-actions .accept { background: var(--sage-dark); color: #fff; }
+    .notification-actions .decline { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+
     .chat-search { width: 100%; padding: 10px 12px; margin-bottom: 15px; border: 1px solid var(--line); border-radius: 9px; outline: none; background: rgba(255,255,255,.7); color: var(--ink); font-size: 12px; }
     .friends-panel { display: grid; gap: 9px; }
     .friends-add { display: flex; gap: 5px; }
     .friends-add input { min-width: 0; flex: 1; padding: 9px 8px; border: 1px solid var(--line); border-radius: 8px; outline: none; background: rgba(255,255,255,.7); color: var(--ink); font-size: 10px; }
     .friends-add button { width: 30px; border: 0; border-radius: 8px; background: var(--coral); color: #fff; font-size: 17px; }
-    .friend-requests { display: grid; gap: 6px; margin-top: 5px; }
-    .friend-request { display: grid; grid-template-columns: 30px minmax(0,1fr) auto; gap: 7px; align-items: center; padding: 7px; border: 1px solid #124447; border-radius: 8px; background: #062729; }
-    .friend-request-copy { min-width: 0; display: grid; gap: 2px; }
-    .friend-request-copy strong { overflow: hidden; color: #e9f5f1; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
-    .friend-request-copy small { color: #789b96; font-size: 8px; }
-    .friend-request-actions { display: flex; gap: 4px; }
-    .friend-request-actions button { padding: 5px 7px; border: 0; border-radius: 6px; font-size: 9px; font-weight: 700; }
-    .friend-request-actions .accept { background: #087b6b; color: #fff; }
-    .friend-request-actions .decline { background: transparent; border: 1px solid #124447; color: #a8c3bd; }
-    .friend-avatar { flex: 0 0 auto; }
     .friend-suggestions { display: none; gap: 3px; padding: 4px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
     .friend-suggestions.visible { display: grid; }
     .friend-suggestion { display: flex; align-items: center; gap: 7px; padding: 7px; border: 0; border-radius: 6px; background: transparent; color: var(--ink); font-size: 10px; text-align: left; }
@@ -371,12 +370,12 @@
       <div class="account-row"><div class="account-copy"><strong id="accountName">Visitante</strong><small id="accountEmail">Crie sua conta local</small></div><button class="account-button" id="accountButton" type="button" aria-label="Abrir conta">S</button><button class="settings-button" id="settingsButton" type="button" aria-label="Abrir configurações">⚙</button></div>
       <button class="new-chat" id="newChat" type="button">▢ &nbsp; Nova conversa</button>
       <button class="group-chat" id="createGroupButton" type="button">＋ Criar grupo</button>
+      <button class="notification-button" id="notificationsButton" type="button">🔔 Notificações <span class="notification-count" id="notificationCount" hidden>0</span></button>
       <p class="section-label">Amigos e amizades</p>
       <div class="friends-panel">
         <div class="friends-add"><input id="friendInput" type="text" placeholder="Nome ou usuário" aria-label="Adicionar amigo"><button id="addFriend" type="button" aria-label="Adicionar amigo">＋</button></div>
         <div class="friend-suggestions" id="friendSuggestions" aria-live="polite"></div>
         <div class="friend-list" id="friendList"></div>
-        <div class="friend-requests" id="friendRequests" hidden></div>
         <button class="create-friends-group" id="createFriendsGroup" type="button">Criar grupo com selecionados</button>
       </div>
       <div class="privacy-note"><strong>Seu espaço é privado</strong>As contas usam autenticação Supabase. Configure as políticas de segurança do banco antes de guardar conversas reais.</div>
@@ -424,9 +423,21 @@
   <div class="modal-backdrop" id="settingsModal" hidden>
     <section class="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
     <div class="settings-modal-header"><h2 id="settingsTitle">Configurações</h2><button class="modal-close" id="closeSettingsX" type="button" aria-label="Fechar configurações">×</button></div>
+      <div class="settings-section"><h3>Editar perfil</h3>
+        <div class="profile-field"><label>Seu nome</label><input id="profileNameInput" type="text" placeholder="Como podemos chamar você?"></div>
+        <div class="profile-field"><label>Username</label><input id="profileUsernameInput" type="text" placeholder="seu_username" autocomplete="off"></div>
+        <button class="save-profile" id="saveAccountProfile" type="button">Salvar perfil</button>
+      </div>
       <div class="settings-section"><h3>Foto de perfil</h3><div class="photo-row"><div class="settings-avatar" id="settingsAvatar">S</div><label class="photo-label">Escolher foto<input id="profilePhoto" type="file" accept="image/*"></label></div></div>
       <div class="settings-section"><h3>Cor do site</h3><div class="color-picker-row"><input class="color-picker" id="siteColor" type="color" value="#16b592" aria-label="Escolher cor do site"><span class="color-picker-help">Escolha uma cor. Ela será aplicada ao menu, chat, mensagens, cartões e botões.</span></div></div>
       <div class="settings-section"><button class="logout-button" id="logoutButton" type="button">Sair da conta</button></div>
+    </section>
+  </div>
+  <div class="modal-backdrop" id="notificationsModal" hidden>
+    <section class="account-modal" role="dialog" aria-modal="true" aria-labelledby="notificationsTitle">
+      <div class="settings-modal-header"><h2 id="notificationsTitle">Notificações</h2><button class="modal-close" id="closeNotifications" type="button" aria-label="Fechar notificações">×</button></div>
+      <p>Solicitações de amizade recebidas.</p>
+      <div class="notification-list" id="notificationList"></div>
     </section>
   </div>
   <div class="modal-backdrop" id="groupModal" hidden>
@@ -434,7 +445,7 @@
       <h2 id="groupTitle">Criar grupo</h2>
       <p>Crie uma conversa com uma ou mais pessoas. Separe os nomes por vírgula.</p>
       <div class="profile-field"><label>Nome do grupo</label><input id="groupNameInput" type="text" placeholder="Ex.: Grupo de estudos"></div>
-      <p class="group-modal-note">O grupo será criado vazio. Depois você poderá convidar seus amigos pela aba da conversa. A IA só responde quando alguém usar `/analisar`.</p>
+      <p class="group-modal-note">Você será o administrador do grupo. Se selecionar amigos, eles entrarão assim que o grupo for criado. A IA só responde quando alguém usar `/analisar`.</p>
       <div class="modal-actions"><button class="cancel" id="cancelGroup" type="button">Cancelar</button><button class="confirm" id="createGroup" type="button">Criar grupo</button></div>
     </section>
   </div>
@@ -471,7 +482,7 @@
     ];
     let state = JSON.parse(localStorage.getItem(storageKey) || 'null') || { name: '', topic: '', account: null, group: null, messages: starterMessages };
     state.friends ||= [];
-    state.pendingFriendRequests ||= [];
+    state.friendRequests ||= [];
     state.theme ||= 'teal';
     state.profilePhoto ||= '';
     state.group ||= null;
@@ -516,7 +527,19 @@
         element.style.backgroundPosition = 'center';
       });
     }
-    const friendName = friend => typeof friend === 'string' ? friend : friend.username;
+    const friendName = friend => typeof friend === 'string' ? friend : (friend?.username || friend?.name || 'Usuário');
+    function renderNotifications(requests = state.friendRequests || []) {
+      const list = document.getElementById('notificationList');
+      const count = document.getElementById('notificationCount');
+      if (!list || !count) return;
+      count.textContent = String(requests.length);
+      count.hidden = requests.length === 0;
+      list.innerHTML = requests.length ? requests.map(request => {
+        const sender = request.sender || {};
+        const display = sender.name || sender.username || 'Usuário';
+        return `<div class="notification-row"><span class="friend-avatar">${escapeHtml(display.slice(0,1).toUpperCase())}</span><div><strong>${escapeHtml(display)}</strong><small style="display:block;color:var(--muted);margin-top:2px">@${escapeHtml(sender.username || 'usuario')}</small><div class="notification-actions"><button class="accept" type="button" data-accept-request="${request.id}">Aceitar</button><button class="decline" type="button" data-decline-request="${request.id}">Recusar</button></div></div></div>`;
+      }).join('') : '<small style="padding:8px;color:var(--muted)">Nenhuma solicitação de amizade pendente.</small>';
+    }
     function render() {
       messagesEl.innerHTML = state.messages.map(message => `<article class="message ${message.author === 'user' ? 'mine' : 'bot'}"><div class="message-avatar">${message.author === 'user' ? initials() : '✦'}</div><div><div class="bubble">${escapeHtml(message.text).replace(/\n/g, '<br>')}</div><div class="message-meta">${message.time}</div>${message.author === 'user' ? `<div class="message-actions"><button type="button" data-edit="${message.id}">Editar mensagem</button></div>` : ''}</div></article>`).join('');
       messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -527,6 +550,11 @@
       applyAppearance();
       document.getElementById('accountName').textContent = state.account?.name || state.name || 'Visitante';
       document.getElementById('accountEmail').textContent = state.account?.username ? `@${state.account.username}` : 'Entre na sua conta';
+      const profileNameInput = document.getElementById('profileNameInput');
+      const profileUsernameInput = document.getElementById('profileUsernameInput');
+      if (profileNameInput && document.activeElement !== profileNameInput) profileNameInput.value = state.account?.name || state.name || '';
+      if (profileUsernameInput && document.activeElement !== profileUsernameInput) profileUsernameInput.value = state.account?.username || '';
+      renderNotifications(state.friendRequests || []);
       document.getElementById('chatTitle').textContent = state.group?.name || 'Âncora IA';
       document.getElementById('chatSubtitle').textContent = state.group ? 'Conversa entre pessoas' : 'Especialista em psicologia e cérebro humano';
       document.getElementById('participants').textContent = state.group ? `Você, ${state.group.people.join(', ')}` : 'Você';
@@ -535,7 +563,6 @@
       const groupSymbol = document.getElementById('groupChatSymbol');
       if (groupSymbol) { groupSymbol.textContent = state.group?.photo ? '' : '♙'; groupSymbol.style.backgroundImage = state.group?.photo ? `url("${state.group.photo}")` : ''; groupSymbol.style.backgroundSize = 'cover'; groupSymbol.style.backgroundPosition = 'center'; }
       document.getElementById('friendList').innerHTML = state.friends.length ? state.friends.map((friend, index) => { const name = friendName(friend); return `<label class="friend-row"><span class="friend-avatar">${escapeHtml(name.slice(0, 1).toUpperCase())}</span><span>${escapeHtml(name)}<small>Amigo</small></span><input type="checkbox" data-friend-index="${index}" aria-label="Selecionar ${escapeHtml(name)}"></label>`; }).join('') : '<small style="padding:8px;color:var(--muted)">Adicione pessoas para criar um grupo.</small>';
-      renderFriendRequests();
     }
     function escapeHtml(value) { return value.replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' }[char])); }
     function showToast(text) { const toast = document.getElementById('toast'); toast.textContent = text; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2400); }
@@ -561,84 +588,38 @@
       try { return await request(); }
       finally { authRequestInFlight = false; button.disabled = false; button.textContent = originalText; }
     }
-    async function getAuthenticatedUser() {
-      if (!supabaseClient) return null;
-      const { data, error } = await supabaseClient.auth.getUser();
-      if (error || !data?.user) return null;
-      return data.user;
-    }
-
-    async function createRemoteGroup(name) {
-      const user = await getAuthenticatedUser();
-      if (!user) throw new Error('Você precisa estar logado para criar um grupo.');
-      const { data, error } = await supabaseClient.rpc('create_group_for_user', {
+    async function createRemoteGroup(name, memberIds = []) {
+      if (!supabaseClient || !state.account?.id) throw new Error('Usuário não autenticado.');
+      const uniqueIds = [...new Set(memberIds.filter(id => id && id !== state.account.id))];
+      const { data, error } = await supabaseClient.rpc('create_group_with_members', {
         group_name: name,
-        group_ai_enabled: state.aiEnabled === true
+        member_ids: uniqueIds
       });
       if (error) throw error;
-      const group = Array.isArray(data) ? data[0] : data;
-      if (!group?.id) throw new Error('O banco não retornou o grupo criado.');
-      return group;
+      if (!data?.id) throw new Error('O Supabase não retornou o grupo criado.');
+      return data;
     }
-
     async function saveRemoteMessage(message) {
       if (!supabaseClient || !state.account?.id || !state.group?.id || message.author !== 'user') return;
       const result = await supabaseClient.from('messages').insert({ group_id: state.group.id, author_id: state.account.id, content: message.text, is_ai: false }).select('id').single();
       if (result.error) showToast('Mensagem local salva; execute o SQL do banco para sincronizar');
       else message.remoteId = result.data.id;
     }
-    async function loadRemoteConversation(groupId = null) {
-      const user = await getAuthenticatedUser();
-      if (!user) return;
-      state.account ||= {};
-      state.account.id = user.id;
-
-      const groupsQuery = supabaseClient.from('groups')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(20);
-      if (groupId) groupsQuery.eq('id', groupId);
-
-      const groups = await groupsQuery;
-      if (groups.error) { console.warn('Erro ao carregar grupos:', groups.error); return; }
+    async function loadRemoteConversation() {
+      if (!supabaseClient || !state.account?.id) return;
+      const groups = await supabaseClient.from('groups').select('*').order('created_at', { ascending: false }).limit(1);
       if (!groups.data?.length) return;
-
       const group = groups.data[0];
       const members = await supabaseClient.from('group_members').select('user_id').eq('group_id', group.id);
-      if (members.error) { console.warn('Erro ao carregar membros:', members.error); return; }
-
-      const memberIds = members.data?.map(member => member.user_id) || [user.id];
-      const profiles = await supabaseClient.from('user_directory').select('id, username, name').in('id', memberIds);
-      const people = profiles.data?.filter(profile => profile.id !== user.id).map(profile => profile.username || profile.name || 'Usuário') || [];
-
-      const remoteMessages = await supabaseClient.from('messages')
-        .select('id, author_id, content, is_ai, created_at, edited_at')
-        .eq('group_id', group.id)
-        .order('created_at');
-
-      state.group = {
-        id: group.id,
-        name: group.name,
-        description: group.description || '',
-        photo: group.photo || '',
-        people,
-        memberIds,
-        aiEnabled: group.ai_enabled
-      };
+      const memberIds = members.data?.map(member => member.user_id) || [state.account.id];
+      const profiles = await supabaseClient.from('profiles').select('id, username').in('id', memberIds);
+      const people = profiles.data?.filter(profile => profile.id !== state.account.id).map(profile => profile.username) || [];
+      const remoteMessages = await supabaseClient.from('messages').select('id, author_id, content, is_ai, created_at, edited_at').eq('group_id', group.id).order('created_at');
+      state.group = { id: group.id, name: group.name, description: group.description || '', photo: group.photo || '', people, memberIds, aiEnabled: group.ai_enabled };
       state.aiEnabled = group.ai_enabled;
-
-      if (!remoteMessages.error && remoteMessages.data?.length) {
-        state.messages = remoteMessages.data.map(message => ({
-          id: Date.now() + Math.random(),
-          remoteId: message.id,
-          author: message.is_ai || message.author_id !== user.id ? 'bot' : 'user',
-          text: message.content,
-          time: new Date(message.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-        }));
-      }
+      if (remoteMessages.data?.length) state.messages = remoteMessages.data.map(message => ({ id: Date.now() + Math.random(), remoteId: message.id, author: message.is_ai || message.author_id !== state.account.id ? 'bot' : 'user', text: message.content, time: new Date(message.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) }));
       save(); render();
     }
-
     async function askPsychologyAI(text) {
       const question = text.replace(/^\/analisar\s*/i, '').trim();
       if (window.location.protocol === 'file:') return `Análise inicial: percebo que você está tentando compreender melhor "${question || 'essa situação'}". Observe quais pensamentos aparecem, o que você sente no corpo e o que aconteceu antes disso. Esta reflexão não é diagnóstico nem substitui psicoterapia ou atendimento profissional.`;
@@ -703,9 +684,9 @@
       state.name = document.getElementById('nameInput').value.trim();
       state.topic = document.getElementById('topicInput').value.trim();
       if (supabaseClient && state.account?.id) {
-        const { error } = await supabaseClient.from('profiles').upsert({ id: state.account.id, username: state.account.username, name: state.name, topic: state.topic });
-        if (error) { showToast('Perfil local salvo; crie a tabela profiles no Supabase'); return; }
-        showToast('Perfil salvo na sua conta');
+        const { error } = await supabaseClient.from('profiles').update({ name: state.name, topic: state.topic }).eq('id', state.account.id);
+        if (error) { showToast(error.message || 'Não foi possível salvar o perfil'); return; }
+        state.account.name = state.name; showToast('Perfil salvo na sua conta');
       } else showToast('Perfil salvo neste navegador');
       save(); render();
     });
@@ -725,17 +706,38 @@
     document.getElementById('settingsButton').addEventListener('click', () => { applyAppearance(); settingsModal.hidden = false; });
     document.getElementById('closeSettingsX').addEventListener('click', () => { settingsModal.hidden = true; });
     document.getElementById('siteColor').addEventListener('change', event => { state.customColor = event.target.value; save(); applyAppearance(); showToast('Cor aplicada em todo o site'); });
+    document.getElementById('saveAccountProfile').addEventListener('click', async () => {
+      if (!supabaseClient || !state.account?.id) { showToast('Entre na sua conta para editar o perfil'); return; }
+      const name = document.getElementById('profileNameInput').value.trim();
+      const username = document.getElementById('profileUsernameInput').value.trim().toLowerCase().replace(/[^a-z0-9._-]/g, '').slice(0, 40);
+      if (!name || !username) { showToast('Preencha nome e username'); return; }
+      const { data, error } = await supabaseClient.from('profiles').update({ name, username, photo: state.profilePhoto || '' }).eq('id', state.account.id).select('id, username, name, photo').single();
+      if (error) {
+        if (error.code === '23505') showToast('Esse username já está sendo usado');
+        else showToast(error.message || 'Não foi possível salvar o perfil');
+        return;
+      }
+      state.account.name = data.name; state.account.username = data.username; state.name = data.name; state.profilePhoto = data.photo || '';
+      save(); render(); showToast('Perfil atualizado');
+    });
     document.getElementById('profilePhoto').addEventListener('change', event => {
       const file = event.target.files[0];
       if (!file) return;
       if (file.size > 2 * 1024 * 1024) { showToast('Escolha uma foto de até 2 MB'); return; }
       const reader = new FileReader();
-      reader.onload = () => { state.profilePhoto = reader.result; save(); applyAppearance(); showToast('Foto de perfil atualizada'); };
+      reader.onload = async () => {
+        state.profilePhoto = reader.result; save(); applyAppearance();
+        if (supabaseClient && state.account?.id) {
+          const { error } = await supabaseClient.from('profiles').update({ photo: state.profilePhoto }).eq('id', state.account.id);
+          if (error) { showToast('Foto aplicada localmente, mas não foi salva no banco'); return; }
+        }
+        showToast('Foto de perfil atualizada');
+      };
       reader.readAsDataURL(file);
     });
     document.getElementById('logoutButton').addEventListener('click', async () => {
       if (supabaseClient) await supabaseClient.auth.signOut();
-      state.account = null; save(); settingsModal.hidden = true; showAuthPage(); showToast('Você saiu da conta');
+      state.account = null; state.friends = []; state.friendRequests = []; if (friendRequestChannel) { supabaseClient.removeChannel(friendRequestChannel); friendRequestChannel = null; } save(); settingsModal.hidden = true; showAuthPage(); showToast('Você saiu da conta');
     });
     document.getElementById('accountMode').addEventListener('click', () => { accountMode = accountMode === 'login' ? 'signup' : 'login'; updateAccountMode(); });
     document.getElementById('createAccount').addEventListener('click', async event => {
@@ -759,6 +761,7 @@
       const user = result.data.user;
       state.account = { id: user.id, username: user.user_metadata?.username || usernameFromGmail(email), name: user.user_metadata?.name || username, email: user.email };
       state.name = state.account.name;
+      if (result.data.session) { await loadFriends(); await loadFriendRequests(); subscribeFriendRequests(); }
       save(); render(); accountModal.hidden = true;
       showToast(accountMode === 'signup' && !result.data.session ? 'Conta criada! Confira seu Gmail.' : 'Login realizado com sucesso');
     });
@@ -805,6 +808,7 @@
       const user = result.data.user;
       state.account = { id: user.id, username: user.user_metadata?.username || username, name: user.user_metadata?.name || username, email: user.email };
       state.name = state.account.name;
+      if (result.data.session) { await loadFriends(); await loadFriendRequests(); subscribeFriendRequests(); }
       save(); render();
       if (authMode === 'signup' && !result.data.session) {
         showToast('Conta criada! Confira seu Gmail para confirmar e depois entre.');
@@ -813,157 +817,105 @@
       showAuthenticatedApp();
       showToast('Login realizado com sucesso');
     });
+    let friendRequestChannel = null;
+    async function loadFriendRequests() {
+      if (!supabaseClient || !state.account?.id) { state.friendRequests = []; renderNotifications([]); return; }
+      const { data, error } = await supabaseClient.from('friend_requests')
+        .select('id, sender_id, created_at')
+        .eq('receiver_id', state.account.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+      if (error) { console.error('Erro ao carregar solicitações:', error); return; }
+      const requests = data || [];
+      const senderIds = requests.map(request => request.sender_id).filter(Boolean);
+      let profilesById = {};
+      if (senderIds.length) {
+        const profiles = await supabaseClient.from('user_directory').select('id, username, name').in('id', senderIds);
+        if (profiles.error) { console.error('Erro ao carregar remetentes:', profiles.error); return; }
+        profilesById = Object.fromEntries((profiles.data || []).map(profile => [profile.id, profile]));
+      }
+      state.friendRequests = requests.map(request => ({ ...request, sender: profilesById[request.sender_id] || {} }));
+      renderNotifications(state.friendRequests);
+      save();
+    }
+    function subscribeFriendRequests() {
+      if (!supabaseClient || !state.account?.id) return;
+      if (friendRequestChannel) supabaseClient.removeChannel(friendRequestChannel);
+      friendRequestChannel = supabaseClient.channel(`account-updates-${state.account.id}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'friend_requests', filter: `receiver_id=eq.${state.account.id}` }, () => loadFriendRequests())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'friendships', filter: `user_id=eq.${state.account.id}` }, () => loadFriends().then(render))
+        .subscribe();
+    }
+    async function loadFriends() {
+      if (!supabaseClient || !state.account?.id) { state.friends = []; return; }
+      const { data: relations, error } = await supabaseClient.from('friendships').select('friend_id').eq('user_id', state.account.id);
+      if (error) { console.error('Erro ao carregar amizades:', error); return; }
+      const ids = (relations || []).map(item => item.friend_id);
+      if (!ids.length) { state.friends = []; return; }
+      const { data: friends, error: friendsError } = await supabaseClient.from('user_directory').select('id, username, name').in('id', ids);
+      if (friendsError) { console.error('Erro ao carregar amigos:', friendsError); return; }
+      state.friends = friends || [];
+    }
     async function restoreSupabaseSession() {
       if (!supabaseClient) return;
       const { data } = await supabaseClient.auth.getSession();
       if (data.session?.user) {
         const user = data.session.user;
-        state.account = { id: user.id, name: user.user_metadata?.name || 'Usuário', email: user.email };
-        const username = user.user_metadata?.username || user.user_metadata?.name || user.email?.split('@')[0] || 'Usuário';
-        state.account.username = username;
-        const profile = await supabaseClient.from('profiles').select('username, name, topic').eq('id', user.id).maybeSingle();
-        if (profile.data) { state.account.username = profile.data.username || username; state.name = profile.data.name || state.account.username; state.topic = profile.data.topic || ''; document.getElementById('nameInput').value = state.name; document.getElementById('topicInput').value = state.topic; }
-        else state.name = state.account.name;
-        await loadFriendshipsAndRequests();
+        state.account = { id: user.id, name: user.user_metadata?.name || 'Usuário', email: user.email, username: user.user_metadata?.username || user.email?.split('@')[0] || 'usuario' };
+        const profile = await supabaseClient.from('profiles').select('username, name, topic, photo').eq('id', user.id).maybeSingle();
+        if (profile.data) {
+          state.account.username = profile.data.username || state.account.username;
+          state.account.name = profile.data.name || state.account.name;
+          state.name = state.account.name;
+          state.topic = profile.data.topic || '';
+          state.profilePhoto = profile.data.photo || '';
+          document.getElementById('nameInput').value = state.name;
+          document.getElementById('topicInput').value = state.topic;
+        } else state.name = state.account.name;
+        await loadFriends();
+        await loadFriendRequests();
+        subscribeFriendRequests();
         save(); render(); showAuthenticatedApp(); await loadRemoteConversation();
       }
-      supabaseClient.auth.onAuthStateChange((_event, session) => { if (!session) { state.account = null; save(); render(); } });
-    }
-    async function loadFriendshipsAndRequests() {
-      const user = await getAuthenticatedUser();
-      if (!user) return;
-
-      const relations = await supabaseClient.from('friendships')
-        .select('friend_id')
-        .eq('user_id', user.id);
-
-      if (relations.error) {
-        console.warn('Erro ao carregar amizades:', relations.error);
-      } else if (relations.data?.length) {
-        const friendIds = relations.data.map(item => item.friend_id);
-        const friends = await supabaseClient.from('user_directory')
-          .select('id, username, name')
-          .in('id', friendIds);
-        if (!friends.error) state.friends = friends.data || [];
-      } else {
-        state.friends = [];
-      }
-
-      const requests = await supabaseClient.from('friend_requests')
-        .select('id, sender_id, receiver_id, status, created_at')
-        .eq('receiver_id', user.id)
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
-
-      if (requests.error) {
-        console.warn('Erro ao carregar solicitações:', requests.error);
-        state.pendingFriendRequests = [];
-      } else {
-        const senderIds = (requests.data || []).map(item => item.sender_id);
-        let senderProfiles = [];
-        if (senderIds.length) {
-          const profileResult = await supabaseClient.from('user_directory')
-            .select('id, username, name')
-            .in('id', senderIds);
-          senderProfiles = profileResult.data || [];
+      supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+        if (!session) {
+          state.account = null; state.friends = []; state.friendRequests = [];
+          if (friendRequestChannel) { supabaseClient.removeChannel(friendRequestChannel); friendRequestChannel = null; }
+          save(); render(); showAuthPage();
         }
-        state.pendingFriendRequests = (requests.data || []).map(request => ({
-          ...request,
-          sender: senderProfiles.find(profile => profile.id === request.sender_id) || { id: request.sender_id, username: 'Usuário', name: 'Usuário' }
-        }));
-      }
-
-      save(); render();
+      });
     }
-
-    async function sendFriendRequest(friend) {
-      const user = await getAuthenticatedUser();
-      if (!user) { showToast('Entre na sua conta para adicionar amigos.'); return; }
-      if (!friend?.id || friend.id === user.id) return;
-
-      const result = await supabaseClient.rpc('send_friend_request', { target_user_id: friend.id });
-      if (result.error) {
-        const msg = result.error.message || '';
-        showToast(/already|friend|pending/i.test(msg) ? 'Essa solicitação já existe ou vocês já são amigos.' : 'Não foi possível enviar a solicitação.');
-        console.warn('Erro ao enviar solicitação:', result.error);
+    async function sendFriendRequest(friend, friendId = null) {
+      if (!supabaseClient || !state.account?.id) { showToast('Entre na sua conta para adicionar amigos'); return; }
+      let targetId = friendId;
+      if (!targetId) {
+        const term = friendName(friend).trim();
+        const normalized = term.includes('@gmail.com') ? term.split('@')[0] : term;
+        const safeTerm = normalized.replace(/[,%()]/g, '');
+        const { data, error } = await supabaseClient.rpc('search_user_directory', { search_term: safeTerm });
+        if (error) { showToast('Não foi possível buscar essa conta'); return; }
+        const exact = (data || []).find(item => item.username?.toLowerCase() === normalized.toLowerCase() || item.name?.toLowerCase() === normalized.toLowerCase());
+        if (!exact) { showToast('Nenhuma conta encontrada com esse nome ou username'); return; }
+        targetId = exact.id;
+      }
+      const { data, error } = await supabaseClient.rpc('send_friend_request', { target_user_id: targetId });
+      if (error) {
+        const message = error.message || '';
+        if (/already friends/i.test(message)) showToast('Essa pessoa já é sua amiga');
+        else if (/pending/i.test(message)) showToast('A solicitação já está pendente');
+        else showToast(message || 'Não foi possível enviar a solicitação');
         return;
       }
-
       document.getElementById('friendInput').value = '';
       document.getElementById('friendSuggestions').classList.remove('visible');
-      showToast('Solicitação de amizade enviada');
+      showToast(data?.status === 'already_pending' ? 'Solicitação já enviada' : 'Solicitação de amizade enviada');
     }
-
-    async function respondFriendRequest(requestId, accept) {
-      const user = await getAuthenticatedUser();
-      if (!user || !requestId) return;
-
-      const result = accept
-        ? await supabaseClient.rpc('accept_friend_request', { request_id: requestId })
-        : await supabaseClient.from('friend_requests')
-            .update({ status: 'declined', updated_at: new Date().toISOString() })
-            .eq('id', requestId)
-            .eq('receiver_id', user.id)
-            .eq('status', 'pending');
-
-      if (result.error) {
-        showToast('Não foi possível atualizar a solicitação.');
-        console.warn('Erro na solicitação:', result.error);
-        return;
-      }
-
-      await loadFriendshipsAndRequests();
-      showToast(accept ? 'Amizade aceita!' : 'Solicitação recusada');
-    }
-
-    function renderFriendRequests() {
-      const container = document.getElementById('friendRequests');
-      const requests = state.pendingFriendRequests || [];
-      if (!requests.length) {
-        container.hidden = true;
-        container.innerHTML = '';
-        return;
-      }
-      container.hidden = false;
-      container.innerHTML = `<div style="padding:4px 2px;color:var(--sage-dark);font-size:9px;font-weight:700">Solicitações (${requests.length})</div>` +
-        requests.map(request => {
-          const sender = request.sender || {};
-          const name = sender.username || sender.name || 'Usuário';
-          return `<div class="friend-request">
-            <span class="friend-avatar">${escapeHtml(name.slice(0, 1).toUpperCase())}</span>
-            <span class="friend-request-copy"><strong>${escapeHtml(name)}</strong><small>${escapeHtml(sender.name || 'Quer ser seu amigo')}</small></span>
-            <span class="friend-request-actions">
-              <button class="accept" type="button" data-friend-request="${request.id}" data-accept="1">Aceitar</button>
-              <button class="decline" type="button" data-friend-request="${request.id}" data-accept="0">Recusar</button>
-            </span>
-          </div>`;
-        }).join('');
-    }
-
-    async function addFriendAccount(friend, friendId = null) {
-      if (friendId) {
-        await sendFriendRequest({ id: friendId, username: friendName(friend) });
-        return;
-      }
-      const value = String(friend || '').trim();
-      if (!value) return;
-      const searchTerm = value.toLowerCase().replace(/^@/, '').replace(/[%_]/g, char => `\\${char}`);
-      const { data, error } = await supabaseClient.rpc('search_user_directory', { search_term: searchTerm, max_results: 8 });
-      if (error || !data?.length) { showToast('Nenhuma conta encontrada.'); return; }
-      const exact = data.find(profile => (profile.username || '').toLowerCase() === searchTerm || (profile.name || '').toLowerCase() === searchTerm);
-      await sendFriendRequest(exact || data[0]);
-    }
-
     document.getElementById('addFriend').addEventListener('click', () => {
       const friend = document.getElementById('friendInput').value.trim();
       if (!friend) { showToast('Digite o nome ou usuário de uma pessoa'); return; }
-      addFriendAccount(friend);
+      sendFriendRequest(friend);
     });
-
-    document.getElementById('friendInput').addEventListener('keydown', event => {
-      if (event.key === 'Enter') { event.preventDefault(); document.getElementById('addFriend').click(); }
-    });
-
+    document.getElementById('friendInput').addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); document.getElementById('addFriend').click(); } });
     let friendSearchTimer = null;
     let friendSearchRequest = 0;
     document.getElementById('friendInput').addEventListener('input', event => {
@@ -971,58 +923,51 @@
       const term = event.target.value.trim();
       const suggestions = document.getElementById('friendSuggestions');
       if (!term) { suggestions.innerHTML = ''; suggestions.classList.remove('visible'); return; }
-      if (!supabaseClient || !state.account?.id) {
-        suggestions.innerHTML = '<small style="padding:7px;color:var(--muted)">Entre na sua conta para buscar pessoas.</small>';
-        suggestions.classList.add('visible');
-        return;
-      }
-
+      if (!supabaseClient || !state.account?.id) { suggestions.innerHTML = '<small style="padding:7px;color:var(--muted)">Entre na sua conta para buscar pessoas.</small>'; suggestions.classList.add('visible'); return; }
       const requestId = ++friendSearchRequest;
       friendSearchTimer = setTimeout(async () => {
-        const searchTerm = term.toLowerCase().replace(/^@/, '');
-        const { data, error } = await supabaseClient.rpc('search_user_directory', {
-          search_term: searchTerm,
-          max_results: 8
-        });
-
+        const searchTerm = term.includes('@gmail.com') ? term.split('@')[0] : term;
+        const { data, error } = await supabaseClient.rpc('search_user_directory', { search_term: searchTerm });
         if (requestId !== friendSearchRequest) return;
-        const filtered = (data || []).filter(friend => friend.id !== state.account.id);
-        if (error || !filtered.length) {
+        if (error || !data?.length) {
           suggestions.innerHTML = '<small style="padding:7px;color:var(--muted)">Nenhuma conta encontrada.</small>';
-          suggestions.classList.add('visible');
-          return;
+          suggestions.classList.add('visible'); return;
         }
-
-        suggestions.innerHTML = filtered.map(friend => `
-          <button class="friend-suggestion" type="button" data-suggestion-id="${friend.id}" data-suggestion-name="${escapeHtml(friend.username || friend.name || 'Usuário')}">
-            <span class="friend-avatar">${escapeHtml((friend.username || friend.name || 'U').slice(0, 1).toUpperCase())}</span>
-            <span><strong>${escapeHtml(friend.username || 'Usuário')}</strong><small>${escapeHtml(friend.name || 'Usuário')}</small></span>
-            <small style="margin-left:auto;color:var(--sage-dark)">Adicionar</small>
-          </button>`).join('');
+        suggestions.innerHTML = data.filter(friend => friend.id !== state.account.id).slice(0, 8).map(friend => `<button class="friend-suggestion" type="button" data-suggestion-id="${friend.id}" data-suggestion-name="${escapeHtml(friend.username)}"><span class="friend-avatar">${escapeHtml((friend.username || friend.name || 'U').slice(0,1).toUpperCase())}</span><span><strong>${escapeHtml(friend.username)}</strong><small>${escapeHtml(friend.name || 'Usuário')}</small></span></button>`).join('');
         suggestions.classList.add('visible');
       }, 300);
     });
-
     document.getElementById('friendSuggestions').addEventListener('click', event => {
       const suggestion = event.target.closest('[data-suggestion-id]');
-      if (suggestion) sendFriendRequest({
-        id: suggestion.dataset.suggestionId,
-        username: suggestion.dataset.suggestionName
-      });
+      if (suggestion) sendFriendRequest(suggestion.dataset.suggestionName, suggestion.dataset.suggestionId);
     });
 
-    document.getElementById('friendRequests').addEventListener('click', event => {
-      const button = event.target.closest('[data-friend-request]');
-      if (!button) return;
-      respondFriendRequest(button.dataset.friendRequest, button.dataset.accept === '1');
+    const notificationsModal = document.getElementById('notificationsModal');
+    document.getElementById('notificationsButton').addEventListener('click', async () => {
+      if (!state.account?.id) { showToast('Entre na sua conta para ver as notificações'); return; }
+      await loadFriendRequests();
+      notificationsModal.hidden = false;
     });
-
+    document.getElementById('closeNotifications').addEventListener('click', () => { notificationsModal.hidden = true; });
+    document.getElementById('notificationList').addEventListener('click', async event => {
+      const accept = event.target.closest('[data-accept-request]');
+      const decline = event.target.closest('[data-decline-request]');
+      const requestId = accept?.dataset.acceptRequest || decline?.dataset.declineRequest;
+      if (!requestId) return;
+      const accepted = Boolean(accept);
+      const { error } = await supabaseClient.rpc('respond_friend_request', { request_id: requestId, accept_request: accepted });
+      if (error) { showToast(error.message || 'Não foi possível atualizar a solicitação'); return; }
+      await loadFriends();
+      await loadFriendRequests();
+      render();
+      showToast(accepted ? 'Amizade aceita' : 'Solicitação recusada');
+    });
     let pendingGroupPeople = [];
     document.getElementById('createFriendsGroup').addEventListener('click', () => {
-      const selected = [...document.querySelectorAll('[data-friend-index]:checked')].map(inputElement => state.friends[Number(inputElement.dataset.friendIndex)]);
+      const selected = [...document.querySelectorAll('[data-friend-index]:checked')].map(inputElement => state.friends[Number(inputElement.dataset.friendIndex)]).filter(Boolean);
       if (!selected.length) { showToast('Selecione pelo menos um amigo'); return; }
       document.getElementById('groupNameInput').value = 'Grupo de amigos';
-      pendingGroupPeople = selected.map(friendName);
+      pendingGroupPeople = selected;
       openGroupCreation();
     });
     document.getElementById('newChat').addEventListener('click', () => { state.group = null; state.messages = [{ id: Date.now(), author: 'bot', text: 'Nova conversa iniciada. Crie um grupo para conversar com seus amigos.', time: now() }]; save(); render(); showToast('Nova conversa criada'); });
@@ -1031,83 +976,44 @@
     document.getElementById('createGroupButton').addEventListener('click', openGroupCreation);
     document.getElementById('cancelGroup').addEventListener('click', () => { groupModal.hidden = true; });
     async function createGroupAndOpen(name, people = []) {
-      let remoteGroup = null;
-      try {
-        remoteGroup = await createRemoteGroup(name);
-      } catch (error) {
-        console.warn('Erro ao criar grupo:', error);
-        showToast(error?.message || 'Não foi possível salvar o grupo no banco');
-        return;
-      }
-
-      state.group = {
-        id: remoteGroup.id,
-        name: remoteGroup.name || name,
-        people: [],
-        memberIds: [state.account.id],
-        description: remoteGroup.description || '',
-        photo: remoteGroup.photo || '',
-        aiEnabled: remoteGroup.ai_enabled === true
-      };
-      state.aiEnabled = state.group.aiEnabled;
+      if (!state.account?.id) { showToast('Entre na sua conta para criar um grupo'); return; }
+      const selectedPeople = Array.isArray(people) ? people : [];
+      const memberIds = selectedPeople.map(person => typeof person === 'string' ? null : person?.id).filter(Boolean);
+      let remoteGroup;
+      try { remoteGroup = await createRemoteGroup(name, memberIds); }
+      catch (error) { console.error('Erro ao criar grupo:', error); showToast(error?.message || 'Não foi possível salvar o grupo no banco'); return; }
+      const peopleNames = selectedPeople.map(friendName).filter(Boolean);
+      state.group = { id: remoteGroup.id, name: remoteGroup.name || name, people: peopleNames, memberIds: [state.account.id, ...memberIds], description: remoteGroup.description || '', photo: remoteGroup.photo || '', aiEnabled: remoteGroup.ai_enabled ?? state.aiEnabled };
       pendingGroupPeople = [];
-      state.messages = [{
-        id: Date.now(),
-        author: 'bot',
-        text: `Grupo "${state.group.name}" criado. Convide seus amigos pelo botão ＋ Convidar. A IA só responde quando alguém usar /analisar.`,
-        time: now()
-      }];
-
-      save(); render();
-      groupModal.hidden = true;
-      document.getElementById('homeView').hidden = true;
-      document.getElementById('chatView').hidden = false;
-      input.focus();
-
-      // Os convidados só entram depois da confirmação do grupo, usando IDs reais do banco.
-      if (people.length) {
-        const ids = state.friends.filter(friend => people.includes(friendName(friend)) && friend.id).map(friend => friend.id);
-        if (ids.length) {
-          const { error } = await supabaseClient.rpc('add_members_to_group', {
-            target_group_id: state.group.id,
-            member_ids: ids
-          });
-          if (error) console.warn('Erro ao adicionar convidados iniciais:', error);
-          await loadRemoteConversation(state.group.id);
-        }
-      }
+      state.messages = [{ id: Date.now(), author: 'bot', text: `Grupo "${name}" criado. Convide seus amigos pelo botão ＋ Convidar. A IA só responde quando alguém usar /analisar.`, time: now() }];
+      save(); render(); groupModal.hidden = true; document.getElementById('homeView').hidden = true; document.getElementById('chatView').hidden = false; input.focus();
       showToast('Grupo criado com sucesso');
     }
-
+    document.getElementById('createGroup').addEventListener('click', () => { const name = document.getElementById('groupNameInput').value.trim(); if (!name) { showToast('Informe o nome do grupo'); return; } createGroupAndOpen(name, pendingGroupPeople); });
+    document.getElementById('startChat').addEventListener('click', () => createGroupAndOpen('Novo grupo'));
+    const inviteModal = document.getElementById('inviteModal');
+    function renderInviteList() { const inviteList = document.getElementById('inviteList'); const available = state.friends.filter(friend => !state.group?.people.includes(friendName(friend))); inviteList.innerHTML = available.length ? available.map((friend, index) => `<label class="invite-person"><span class="friend-avatar">${escapeHtml(friendName(friend).slice(0, 1).toUpperCase())}</span><span>${escapeHtml(friendName(friend))}</span><input type="checkbox" data-invite-index="${state.friends.indexOf(friend)}" aria-label="Convidar ${escapeHtml(friendName(friend))}"></label>`).join('') : '<small style="color:var(--muted)">Adicione amigos primeiro para convidá-los.</small>'; }
+    document.getElementById('inviteFriendsButton').addEventListener('click', () => { if (!state.group) { showToast('Crie um grupo primeiro'); return; } renderInviteList(); inviteModal.hidden = false; });
+    document.getElementById('closeInvite').addEventListener('click', () => { inviteModal.hidden = true; });
     document.getElementById('confirmInvite').addEventListener('click', async () => {
-      const selected = [...document.querySelectorAll('[data-invite-index]:checked')].map(item => state.friends[Number(item.dataset.inviteIndex)]);
+      const selected = [...document.querySelectorAll('[data-invite-index]:checked')].map(item => state.friends[Number(item.dataset.inviteIndex)]).filter(Boolean);
       const invited = selected.map(friendName);
+      const ids = selected.map(friend => friend.id).filter(Boolean);
       if (!invited.length) { showToast('Selecione pelo menos um amigo'); return; }
-      if (!state.group?.id) { showToast('Crie um grupo primeiro'); return; }
-
-      const ids = selected.filter(friend => friend?.id).map(friend => friend.id);
-      if (!ids.length) { showToast('Selecione amigos cadastrados no banco.'); return; }
-
-      const { error } = await supabaseClient.rpc('add_members_to_group', {
-        target_group_id: state.group.id,
-        member_ids: ids
-      });
-      if (error) {
-        showToast('Não foi possível adicionar os amigos ao grupo.');
-        console.warn('Erro ao adicionar membros:', error);
-        return;
-      }
-
-      await loadRemoteConversation(state.group.id);
-      inviteModal.hidden = true;
-      showToast('Amigos adicionados ao grupo');
+      if (!supabaseClient || !state.group?.id) { showToast('Crie um grupo salvo no Supabase primeiro'); return; }
+      const { error } = await supabaseClient.rpc('add_group_members', { target_group_id: state.group.id, member_ids: ids });
+      if (error) { showToast(error.message || 'Não foi possível adicionar os amigos'); return; }
+      state.group.people = [...new Set([...(state.group.people || []), ...invited])];
+      state.group.memberIds = [...new Set([...(state.group.memberIds || []), ...ids])];
+      state.messages.push({ id: Date.now(), author: 'bot', text: `${invited.join(', ')} entrou${invited.length > 1 ? 'ram' : ''} no grupo.`, time: now() });
+      save(); render(); inviteModal.hidden = true; showToast('Amigos adicionados ao grupo');
     });
     const groupInfoModal = document.getElementById('groupInfoModal');
     document.getElementById('groupInfoButton').addEventListener('click', () => { if (!state.group) { showToast('Crie um grupo primeiro'); return; } document.getElementById('groupTitleInput').value = state.group.name; document.getElementById('groupDescriptionInput').value = state.group.description || ''; const preview = document.getElementById('groupPhotoPreview'); preview.innerHTML = state.group.photo ? `<img src="${state.group.photo}" alt="Foto do grupo">` : '♙'; groupInfoModal.hidden = false; });
     document.getElementById('closeGroupInfo').addEventListener('click', () => { groupInfoModal.hidden = true; });
     document.getElementById('cancelGroupInfo').addEventListener('click', () => { groupInfoModal.hidden = true; });
     document.getElementById('groupPhotoInput').addEventListener('change', event => { const file = event.target.files[0]; if (!file) return; if (file.size > 2 * 1024 * 1024) { showToast('Escolha uma imagem de até 2 MB'); return; } const reader = new FileReader(); reader.onload = () => { document.getElementById('groupPhotoPreview').innerHTML = `<img src="${reader.result}" alt="Foto do grupo">`; document.getElementById('groupPhotoPreview').dataset.photo = reader.result; }; reader.readAsDataURL(file); });
-    document.getElementById('saveGroupInfo').addEventListener('click', async () => { if (!state.group) return; state.group.name = document.getElementById('groupTitleInput').value.trim() || state.group.name; state.group.description = document.getElementById('groupDescriptionInput').value.trim(); state.group.photo = document.getElementById('groupPhotoPreview').dataset.photo || state.group.photo || ''; if (supabaseClient && state.group.id) await supabaseClient.from('groups').update({ name: state.group.name, description: state.group.description, photo: state.group.photo }).eq('id', state.group.id); save(); render(); groupInfoModal.hidden = true; showToast('Informações do grupo atualizadas'); });
+    document.getElementById('saveGroupInfo').addEventListener('click', async () => { if (!state.group) return; const name = document.getElementById('groupTitleInput').value.trim() || state.group.name; const description = document.getElementById('groupDescriptionInput').value.trim(); const photo = document.getElementById('groupPhotoPreview').dataset.photo || state.group.photo || ''; if (supabaseClient && state.group.id) { const { error } = await supabaseClient.from('groups').update({ name, description, photo }).eq('id', state.group.id); if (error) { showToast(error.message || 'Não foi possível atualizar o grupo'); return; } } state.group.name = name; state.group.description = description; state.group.photo = photo; save(); render(); groupInfoModal.hidden = true; showToast('Informações do grupo atualizadas'); });
     document.querySelectorAll('[data-chat]').forEach(item => item.addEventListener('click', () => { document.querySelectorAll('.chat-item').forEach(chat => chat.classList.remove('active')); item.classList.add('active'); if (item.dataset.chat === 'journal') showToast('O diário pessoal estará disponível em breve'); }));
     document.getElementById('nameInput').value = state.name; document.getElementById('topicInput').value = state.topic; updateAccountMode(); setAuthMode(); render(); restoreSupabaseSession();
   </script>
